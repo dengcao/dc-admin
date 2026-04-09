@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 // +----------------------------------------------------------------------
@@ -12,16 +12,12 @@
 // +----------------------------------------------------------------------
 
 return [
-    // 应用地址
-    'app_host'         => env('app.host', ''),
     // 应用的命名空间
     'app_namespace'    => '',
     // 是否启用路由
     'with_route'       => true,
-    // 是否启用事件
-    'with_event'       => true,
     // 默认应用
-    'default_app'      => 'admin',
+    'default_app'      => 'index',
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
 
@@ -40,20 +36,20 @@ return [
     // 显示错误信息
     'show_error_msg'   => true,
 
-    //会员，实名状态
-    'caozha_member_isrn' => array(0 => "否",1 => "是",2 => "待审"),
+//会员，实名状态
+    'dengcao_member_isrn' => array(0 => "否",1 => "是",2 => "待审"),
 
     //文章，状态
-    'caozha_article_status' => array(0 => "无效",1 => "在审",2 => "退稿",9 => "通过"),
+    'dengcao_article_status' => array(0 => "无效",1 => "在审",2 => "退稿",9 => "通过"),
 
     //分类，栏目类型ID
-    'caozha_category_types' => array(0 => "内部栏目",1 => "单网页",2 => "外部链接"),
+    'dengcao_category_types' => array(0 => "内部栏目",1 => "单网页",2 => "外部链接"),
 
     //分类，模型ID，0=系统，1=文章
-    'caozha_category_modelid' => array(0 => "系统内置",1 => "文章模型",2 => "下载模型",3 => "图片模型",4 => "视频模型"),
+    'dengcao_category_modelid' => array(0 => "系统内置",1 => "文章模型",2 => "下载模型",3 => "图片模型",4 => "视频模型"),
 
     //后台权限数组，开发过程中，必须把所有权限都列出来并与程序内部设定一致，以便验证。标识符必须保持唯一性，不能相同
-    'caozha_role_auths'  => array(
+    'dengcao_role_auths'  => array(
         //格式为：'标识符' => array('name'=>'权限名','remarks'=>'权限说明'),
         'config'  =>  array('name'=>'网站配置','remarks'=>'管理网站名称、备案号等一些配置'),
         'roles'  =>  array('name'=>'权限组管理','remarks'=>'可以增删改权限组（拥有此权限相当于超级管理员）'),
@@ -69,14 +65,14 @@ return [
     ),
 
     //前台用户权限，开发过程中，必须把所有权限都列出来并与程序内部设定一致，以便验证。标识符必须保持唯一性，不能相同
-    'caozha_member_role_auths'  => array(
+    'dengcao_member_role_auths'  => array(
         //格式为：'标识符' => array('name'=>'权限名','remarks'=>'权限说明'),
         'mine'  =>  array('name'=>'修改自己资料和密码','remarks'=>'可以修改自己资料和密码'),
         'cmt'  =>  array('name'=>'评论文章','remarks'=>'可以对文章发布评论'),
     ),
 
     //后台初始化菜单,json数据
-    'caozha_init_config'=>'
+    'dengcao_init_config'=>'
  {
   "homeInfo": {
     "title": "首页",
@@ -84,7 +80,7 @@ return [
   },
   "logoInfo": {
     "title": "后台管理系统",
-    "image": "'.get_cz_path().'static/admin/caozha/logo/logo.png",
+    "image": "'.get_cz_path().'static/admin/dengcao/logo/logo.png",
     "href": ""
   },
   "menuInfo": [
@@ -329,7 +325,7 @@ return [
           "child": [
             {
               "title": "用UEditor上传",
-              "href": "'.get_cz_path().'static/admin/caozha/ueditor/demo_upload.html",
+              "href": "'.get_cz_path().'static/admin/dengcao/ueditor/demo_upload.html",
               "icon": "fa fa-snowflake-o",
               "target": "_self"
             },
@@ -426,55 +422,55 @@ return [
           "child": [
             {
               "title": "域名Whois查询",
-              "href": "https://5300.cn/tool/whois/",
+              "href": "https://t.5300.cn/whois/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "二维码生成器",
-              "href": "https://5300.cn/tool/qrcode/",
+              "href": "https://t.5300.cn/qrcode/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "二维码解码器",
-              "href": "https://5300.cn/tool/ewmjm/",
+              "href": "https://t.5300.cn/ewmjm/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "IP地址查询",
-              "href": "https://5300.cn/tool/ip/",
+              "href": "https://t.5300.cn/ip/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "端口扫描器",
-              "href": "https://5300.cn/tool/port_scanner/",
+              "href": "https://t.5300.cn/port_scanner/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "生成htaccess",
-              "href": "https://5300.cn/tool/htaccess/",
+              "href": "https://t.5300.cn/htaccess/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "htaccess转Nginx",
-              "href": "https://5300.cn/tool/apache2nginx/",
+              "href": "https://t.5300.cn/apache2nginx/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "IPv4与IPv6互换",
-              "href": "https://5300.cn/tool/ipv4-ipv6/",
+              "href": "https://t.5300.cn/ipv4-ipv6/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "DNS检测",
-              "href": "https://5300.cn/tool/dns/",
+              "href": "https://t.5300.cn/dns/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             }
@@ -487,31 +483,31 @@ return [
           "child": [
             {
               "title": "美图秀秀网页版",
-              "href": "https://5300.cn/tool/ps/meitu/",
+              "href": "https://t.5300.cn/ps/meitu/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "PS网页版",
-              "href": "https://5300.cn/tool/ps/photoshop/",
+              "href": "https://t.5300.cn/ps/photoshop/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "ico图标制作",
-              "href": "https://5300.cn/tool/ico/",
+              "href": "https://t.5300.cn/ico/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "中国传统色彩",
-              "href": "https://5300.cn/tool/zgcolor/",
+              "href": "https://t.5300.cn/zgcolor/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "日本传统色彩",
-              "href": "https://5300.cn/tool/rbcolor/",
+              "href": "https://t.5300.cn/rbcolor/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             }
@@ -524,91 +520,91 @@ return [
           "child": [
             {
               "title": "JS混淆加密",
-              "href": "https://5300.cn/tool/hdsojso/",
+              "href": "https://t.5300.cn/hdsojso/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "正则测试",
-              "href": "https://5300.cn/tool/regex-test/",
+              "href": "https://t.5300.cn/regex-test/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "CSS压缩/美化",
-              "href": "https://5300.cn/tool/cssmeihua/",
+              "href": "https://t.5300.cn/cssmeihua/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "JS压缩/美化",
-              "href": "https://5300.cn/tool/jsmeihua/",
+              "href": "https://t.5300.cn/jsmeihua/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "HTML/JS格式化",
-              "href": "https://5300.cn/tool/js_html/",
+              "href": "https://t.5300.cn/js_html/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "JSON格式化",
-              "href": "https://5300.cn/tool/jsonformat/",
+              "href": "https://t.5300.cn/jsonformat/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "HTML/UBB互转",
-              "href": "https://5300.cn/tool/html_ubb/",
+              "href": "https://t.5300.cn/html_ubb/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "图片转Base64",
-              "href": "https://5300.cn/tool/img2base64/",
+              "href": "https://t.5300.cn/img2base64/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "时间戳转换",
-              "href": "https://5300.cn/tool/timestamp/",
+              "href": "https://t.5300.cn/timestamp/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "URL编码解码",
-              "href": "https://5300.cn/tool/encodeuri/",
+              "href": "https://t.5300.cn/encodeuri/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "Base64编码/解码",
-              "href": "https://5300.cn/tool/base64/",
+              "href": "https://t.5300.cn/base64/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "MD5加密",
-              "href": "https://5300.cn/tool/md5/",
+              "href": "https://t.5300.cn/md5/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "Unicode互转",
-              "href": "https://5300.cn/tool/chinese2unicode/",
+              "href": "https://t.5300.cn/chinese2unicode/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "科学计算器",
-              "href": "https://5300.cn/tool/jisuanqi/",
+              "href": "https://t.5300.cn/jisuanqi/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             },
             {
               "title": "Emoji表情",
-              "href": "https://5300.cn/tool/emoji/",
+              "href": "https://t.5300.cn/emoji/",
               "icon": "fa fa-angle-right",
               "target": "_blank"              
             }
@@ -619,6 +615,7 @@ return [
   ]
 }
 ',
+
 
 
 

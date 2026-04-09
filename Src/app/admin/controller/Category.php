@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -21,14 +21,14 @@ class Category
     protected $types, $modelids;
 
     protected $middleware = [
-        'caozha_auth' => ['except' => ''],//验证是否管理员
+        'dengcao_auth' => ['except' => ''],//验证是否管理员
     ];
 
     public function __construct()
     {
-        cz_auth("category");//检测是否有权限
-        $this->types = Config::get("app.caozha_category_types");
-        $this->modelids = Config::get("app.caozha_category_modelid");
+        dc_auth("category");//检测是否有权限
+        $this->types = Config::get("app.dengcao_category_types");
+        $this->modelids = Config::get("app.dengcao_category_modelid");
     }
 
     public function add()
@@ -50,8 +50,8 @@ class Category
         $tree->init($categorys);
         $source_string .= $tree->get_tree(0, $str, $parentid);
 
-        $types = Config::get("app.caozha_category_types");
-        $modelids = Config::get("app.caozha_category_modelid");
+        $types = Config::get("app.dengcao_category_types");
+        $modelids = Config::get("app.dengcao_category_modelid");
 
         View::assign([
             'parentid_select' => $source_string,
@@ -97,11 +97,11 @@ class Category
     {
         $catid = Request::param("catid", '', 'filter_sql');
         if (!is_numeric($catid)) {
-            caozha_error("参数错误", "", 1);
+            dengcao_error("参数错误", "", 1);
         }
         $category = CategoryModel::where("catid", "=", $catid)->findOrEmpty();
         if ($category->isEmpty()) {
-            caozha_error("[ID:" . $catid . "]分类不存在。", "", 1);
+            dengcao_error("[ID:" . $catid . "]分类不存在。", "", 1);
         }
 
         $tree = new Tree;
@@ -120,8 +120,8 @@ class Category
         $tree->init($categorys);
         $source_string .= $tree->get_tree(0, $str, $category->parentid);
 
-        $types = Config::get("app.caozha_category_types");
-        $modelids = Config::get("app.caozha_category_modelid");
+        $types = Config::get("app.dengcao_category_types");
+        $modelids = Config::get("app.dengcao_category_modelid");
 
         View::assign([
             'parentid_select' => $source_string,
@@ -174,7 +174,7 @@ class Category
             }
         }
         Cache::clear();//清空缓存
-        caozha_success("更新排序成功", Request::header("referer"), 1);
+        dengcao_success("更新排序成功", Request::header("referer"), 1);
     }
 
 
@@ -185,7 +185,7 @@ class Category
     {
         $catid = Request::param("catid", '', 'filter_sql');
         if (!is_numeric($catid)) {
-            caozha_error("参数错误", "", 1);
+            dengcao_error("参数错误", "", 1);
         }
         $result = get_category_data("","","","",0);//直接读取数据库
         if(!empty($result)) {

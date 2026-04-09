@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Writer\Word2007\Element;
 
 /**
- * TextRun element writer
+ * TextRun element writer.
  *
  * @since 0.10.0
  */
@@ -27,7 +28,7 @@ class Title extends AbstractElement
     /**
      * Write title element.
      */
-    public function write()
+    public function write(): void
     {
         $xmlWriter = $this->getXmlWriter();
         $element = $this->getElement();
@@ -67,7 +68,8 @@ class Title extends AbstractElement
             $this->writeText($text);
             $xmlWriter->endElement(); // w:t
             $xmlWriter->endElement(); // w:r
-        } elseif ($text instanceof \PhpOffice\PhpWord\Element\AbstractContainer) {
+        }
+        if ($text instanceof \PhpOffice\PhpWord\Element\AbstractContainer) {
             $containerWriter = new Container($xmlWriter, $text);
             $containerWriter->write();
         }

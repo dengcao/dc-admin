@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006-2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006-2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -19,14 +19,8 @@ use think\Response;
  */
 class HttpResponseException extends \RuntimeException
 {
-    /**
-     * @var Response
-     */
-    protected $response;
-
-    public function __construct(Response $response)
+    public function __construct(protected Response $response)
     {
-        $this->response = $response;
     }
 
     public function getResponse()

@@ -26,14 +26,14 @@ return [
     'default_filter' => 'htmlentities',
     // 替换标签
     'tpl_replace_string'  =>  [
-        '__CAOZHA-SYS-NAME__'=>$GLOBALS["caozha_common_config"]["name"],
-        '__CAOZHA-SYS-VERSION__'=>$GLOBALS["caozha_common_config"]["version"],
-        '__CAOZHA-SYS-GITEE__'=>$GLOBALS["caozha_common_config"]["gitee"],
-        '__CAOZHA-SYS-GITHUB__'=>$GLOBALS["caozha_common_config"]["github"],
-        '__CAOZHA-ADMIN-SYS-NAME__'=>$GLOBALS["caozha_admin_sys"]["name"],
-        '__CAOZHA-ADMIN-SYS-VERSION__'=>$GLOBALS["caozha_admin_sys"]["version"],
-        '__CAOZHA-ADMIN-SYS-URL__'=>$GLOBALS["caozha_admin_sys"]["url"],
-        '__CAOZHA-STATIC__'=>get_cz_path().'static/index',
-        '__CAOZHA-LAYUIMINI__'=>get_cz_path().'static/admin/layuimini',
+        '__DENGCAO-SYS-NAME__'=>$GLOBALS["dengcao_common_config"]["name"],
+        '__DENGCAO-SYS-VERSION__'=>$GLOBALS["dengcao_common_config"]["version"],
+        '__DENGCAO-SYS-GITEE__'=>$GLOBALS["dengcao_common_config"]["gitee"],
+        '__DENGCAO-SYS-GITHUB__'=>$GLOBALS["dengcao_common_config"]["github"],
+        '__dc-admin-SYS-NAME__'=>$GLOBALS["dengcao_admin_sys"]["name"],
+        '__dc-admin-SYS-VERSION__'=>$GLOBALS["dengcao_admin_sys"]["version"],
+        '__dc-admin-SYS-URL__'=>$GLOBALS["dengcao_admin_sys"]["url"],
+        '__DENGCAO-STATIC__'=>get_cz_path().'static/index',
+        '__DENGCAO-LAYUIMINI__'=>get_cz_path().'static/admin/layuimini',
     ]
 ];

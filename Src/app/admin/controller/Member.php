@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -19,11 +19,11 @@ use app\admin\model\Member as MemberModel;
 class member
 {
     protected $middleware = [
-        'caozha_auth' 	=> ['except' => '' ],//验证是否管理员
+        'dengcao_auth' 	=> ['except' => '' ],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("member");//检测是否有权限
+        dc_auth("member");//检测是否有权限
     }
 
     public function index()
@@ -35,7 +35,7 @@ class member
         }
 
         $member_groups=MemberGroupModel::order('listorder', 'desc')->select()->toArray();
-        $member_isrn = Config::get("app.caozha_member_isrn");
+        $member_isrn = Config::get("app.dengcao_member_isrn");
         View::assign([
             'member_groups'  => $member_groups,
             'member_isrn'  => $member_isrn,
@@ -48,7 +48,7 @@ class member
     public function add()
     {
         $member_groups=MemberGroupModel::order('listorder', 'desc')->select()->toArray();
-        $member_isrn = Config::get("app.caozha_member_isrn");
+        $member_isrn = Config::get("app.dengcao_member_isrn");
         View::assign([
             'member_groups'  => $member_groups,
             'member_isrn'  => $member_isrn,
@@ -88,15 +88,15 @@ class member
     {
         $userid=Request::param("userid",'','filter_sql');
         if(!is_numeric($userid)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $member=MemberModel::where("userid","=",$userid)->findOrEmpty();
         if ($member->isEmpty()) {
-            caozha_error("[ID:".$userid."]用户不存在。","",1);
+            dengcao_error("[ID:".$userid."]用户不存在。","",1);
         }
 
         $member_groups=MemberGroupModel::order('listorder', 'desc')->select()->toArray();
-        $member_isrn = Config::get("app.caozha_member_isrn");
+        $member_isrn = Config::get("app.dengcao_member_isrn");
         View::assign([
             'member_groups'  => $member_groups,
             'member_isrn'  => $member_isrn,
@@ -115,7 +115,7 @@ class member
         }
         $update_data=Request::param('','','filter_sql');//过滤注入
         if(!is_numeric($update_data["userid"])){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
 
         $update_data["islock"]=isset($update_data["islock"])?$update_data["islock"]:0;
@@ -143,17 +143,17 @@ class member
     {
         $userid=Request::param("userid",'','filter_sql');
         if(!is_numeric($userid)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $member=MemberModel::where("userid","=",$userid)->with('groups')->withAttr('islock', function($value) {
             $islock = [0=>'否',1=>'是'];
             return $islock[$value];
         })->withAttr('isrn', function($value) {
-            $isrn = Config::get("app.caozha_member_isrn");
+            $isrn = Config::get("app.dengcao_member_isrn");
             return $isrn[$value];
         })->findOrEmpty();
         if ($member->isEmpty()) {
-            caozha_error("[ID:".$userid."]用户不存在。","",1);
+            dengcao_error("[ID:".$userid."]用户不存在。","",1);
         }else{
             View::assign([
                 'member'  => $member
@@ -182,7 +182,7 @@ class member
             $islock = [0=>'否',1=>'是'];
             return $islock[$value];
         })->withAttr('isrn', function($value) {
-            $isrn = Config::get("app.caozha_member_isrn");
+            $isrn = Config::get("app.dengcao_member_isrn");
             return $isrn[$value];
         })->order('a.regtime', 'desc');
 

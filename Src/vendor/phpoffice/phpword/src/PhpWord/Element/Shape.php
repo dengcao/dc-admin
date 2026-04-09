@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -20,28 +21,28 @@ namespace PhpOffice\PhpWord\Element;
 use PhpOffice\PhpWord\Style\Shape as ShapeStyle;
 
 /**
- * Shape element
+ * Shape element.
  *
  * @since 0.12.0
  */
 class Shape extends AbstractElement
 {
     /**
-     * Shape type arc|curve|line|polyline|rect|oval
+     * Shape type arc|curve|line|polyline|rect|oval.
      *
      * @var string
      */
     private $type;
 
     /**
-     * Shape style
+     * Shape style.
      *
-     * @var \PhpOffice\PhpWord\Style\Shape
+     * @var ?ShapeStyle
      */
     private $style;
 
     /**
-     * Create new instance
+     * Create new instance.
      *
      * @param string $type
      * @param mixed $style
@@ -53,7 +54,7 @@ class Shape extends AbstractElement
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -63,23 +64,24 @@ class Shape extends AbstractElement
     }
 
     /**
-     * Set pattern
+     * Set pattern.
      *
      * @param string $value
+     *
      * @return self
      */
     public function setType($value = null)
     {
-        $enum = array('arc', 'curve', 'line', 'polyline', 'rect', 'oval');
+        $enum = ['arc', 'curve', 'line', 'polyline', 'rect', 'oval'];
         $this->type = $this->setEnumVal($value, $enum, null);
 
         return $this;
     }
 
     /**
-     * Get shape style
+     * Get shape style.
      *
-     * @return \PhpOffice\PhpWord\Style\Shape
+     * @return ?ShapeStyle
      */
     public function getStyle()
     {

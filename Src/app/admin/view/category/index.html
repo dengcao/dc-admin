@@ -2,21 +2,21 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>分类管理 - Powered by __CAOZHA-SYS-NAME__ __CAOZHA-SYS-VERSION__</title>
+    <title>分类管理 - Powered by __DENGCAO-SYS-NAME__ __DENGCAO-SYS-VERSION__</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link rel="stylesheet" href="__CAOZHA-LAYUIMINI__/lib/layui/css/layui.css" media="all">
-    <link rel="stylesheet" href="__CAOZHA-LAYUIMINI__/css/public.css" media="all">
-    <script src="__CAOZHA-STATIC__/js/jquery-3.4.1.min.js"></script>
-    <script src="__CAOZHA-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
-    <script src="__CAOZHA-STATIC__/js/all.js"></script>
-    <link rel="stylesheet" href="__CAOZHA-STATIC__/css/style.css" media="all">
+    <link rel="stylesheet" href="__DENGCAO-LAYUIMINI__/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="__DENGCAO-LAYUIMINI__/css/public.css" media="all">
+    <script src="__DENGCAO-STATIC__/js/jquery-3.4.1.min.js"></script>
+    <script src="__DENGCAO-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
+    <script src="__DENGCAO-STATIC__/js/all.js"></script>
+    <link rel="stylesheet" href="__DENGCAO-STATIC__/css/style.css" media="all">
 </head>
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
-        <div class="caozha-nav-tool">
+        <div class="dengcao-nav-tool">
             <button type="button" class="layui-btn" id="add">添加顶级分类</button>
             <button type="button" class="layui-btn layui-btn-normal" id="category_repair">修复分类数据</button>
         </div>
@@ -104,7 +104,7 @@
                 var body = layer.getChildFrame('body', index);
                 //console.log(body.html()) //得到iframe页的body内容
                 //body.find('input').val('Hi，我是从父页来的')
-                body.find(".caozha-submit").click();
+                body.find(".dengcao-submit").click();
 
                 //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
 
@@ -113,7 +113,7 @@
             ,btn2: function(index, layero){
                 //按钮【按钮二】的回调
                 var body = layer.getChildFrame('body', index);
-                body.find(".caozha-reset").click();
+                body.find(".dengcao-reset").click();
 
                 return false;// 开启该代码可禁止点击该按钮关闭
             }
@@ -127,7 +127,7 @@
 
 
     function del(catid) {
-        caozha_alert = layer.confirm('确定要删除catid为[ ' + catid + ' ]的分类吗？<br>如按确认，将删除其所有子分类及文章等数据。<br>删除后无法撤销，请谨慎操作。', {
+        dengcao_alert = layer.confirm('确定要删除catid为[ ' + catid + ' ]的分类吗？<br>如按确认，将删除其所有子分类及文章等数据。<br>删除后无法撤销，请谨慎操作。', {
             btn: ['确认删除', '取消删除'],
             btnAlign: 'c',
             title: "操作提示"
@@ -149,7 +149,7 @@
                     }
                 }
             });
-            layer.close(caozha_alert);//关闭
+            layer.close(dengcao_alert);//关闭
         });
     }
 

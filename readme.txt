@@ -1,21 +1,19 @@
-﻿caozha-admin 1.x 使用手册
+﻿dc-admin（原caozha-admin） 2.x 使用手册
 
 
 此文档可能不是最新，请查看网络版最新的开发手册：
 
-码云Wiki：https://gitee.com/caozha/caozha-admin/wikis
-GitHub Wiki：https://github.com/cao-zha/caozha-admin/wiki
+码云Wiki：https://gitee.com/dengzhenhua/dc-admin/wikis
+GitHub Wiki：https://github.com/dengcao/dc-admin/wiki
 
 【快速安装】
 
 1、安装环境：
-   PHP版本：caozha-admin1.0-1.7.x 必须PHP7.1至7.3。
-           caozha-admin1.8.x 必须PHP8.0.x（使用PHP8.1有部分BUG，如验证码错误，模板输出NULL时错误等）。
-           caozha-admin1.9.x 必须PHP8.0.x（经测试支持：PHP 8.0/8.1/8.2/8.3）。
-2、上传目录/Src/内所有源码到服务器，并设置网站的根目录指向目录/public/。（此为ThinkPHP6.0要求）
+   PHP版本：dc-admin 2.x 必须PHP8.2+以上版本（经测试支持：PHP 8.2/8.3/8.4/8.5）。
+2、上传目录/Src/内所有源码到服务器，并设置网站的根目录指向目录/public/。（此为ThinkPHP8.1要求）
 3、将/Database/目录里的.sql文件导入到MYSQL数据库。
 4、修改文件/config/database.php，配置您的数据库信息（如果测试时启用了/.env，还需要修改文件/.env，系统会优先使用此配置文件）。
-5、后台访问地址：http://您的域名/admin/index/login  （账号：caozha   密码：123456）
+5、后台访问地址：http://您的域名/admin/index/login  （账号：dengcao   密码：123456）
 
 
 **伪静态设置**
@@ -42,15 +40,16 @@ location / {
     }
 }
 
-4、在网站根目录（/public/）下，有两个文件：.htaccess和nginx.htaccess，分别是Apache和Nginx的伪静态文件，您可以直接拿来使用。
+4、在网站根目录（/public/）下，有两个文件：.htaccess和nginx.htaccess，分别是Apache和Nginx的伪静态文件，您可以直接拿来使用，在phpstudy8.1测试正常。
 
 
 【开发】
 
 准备
-使用本源码之前，建议先熟悉ThinkPHP6.0.x的多应用模式和LayUI框架。
-ThinkPHP 6.0.x 开发手册：https://www.kancloud.cn/manual/thinkphp6_0/1037479
-LayUI 2.x 开发手册：https://www.layui.com/doc/
+使用本源码之前，建议先熟悉ThinkPHP8.1.x的多应用模式和LayUI框架。
+ThinkPHP 8.x 在线开发手册：https://doc.thinkphp.cn/v8_0/preface.html
+ThinkPHP 8.x 离线开发手册：https://github.com/dengcao/thinkphp8  或  https://gitee.com/dengzhenhua/thinkphp8
+LayUI 2.x 开发手册：http://layui.dev/docs
 
 正式
 一、数据库配置
@@ -63,9 +62,9 @@ LayUI 2.x 开发手册：https://www.layui.com/doc/
 三、开发
 
 1、后台权限的配置
-打开Src/app/admin/config/app.php，找到项“caozha_role_auths”，如下：
+打开Src/app/admin/config/app.php，找到项“dengcao_role_auths”，如下：
 
-'caozha_role_auths' => array(
+'dengcao_role_auths' => array(
 
     //格式为：'标识符' => array('name'=>'权限名','remarks'=>'权限说明'),
 
@@ -96,7 +95,7 @@ LayUI 2.x 开发手册：https://www.layui.com/doc/
 
 protected $middleware = [
 
-    'caozha_auth' 	=> ['except' => '' ],//验证是否管理员
+    'dengcao_auth' 	=> ['except' => '' ],//验证是否管理员
 
 ];
 
@@ -108,7 +107,7 @@ protected $middleware = [
 
 public function __construct(){
 
-    cz_auth("admin");//检测是否有权限
+    dc_auth("admin");//检测是否有权限
 
 }
 此函数对该控制器下的所有方法都起效。其中，admin是权限标识符，是与刚才app.php里匹配的。
@@ -117,7 +116,7 @@ public function __construct(){
 
 在控制器方法内部使用：
 
-cz_auth("admin"); //admin是权限标识符
+dc_auth("admin"); //admin是权限标识符
 
 如果没有权限，自动终止程序的运行并报错。
 
@@ -125,7 +124,7 @@ cz_auth("admin"); //admin是权限标识符
 
 判断是否拥有某个标识符的权限：
 
-if(is_cz_auth("log_del")==false){
+if(is_dc_auth("log_del")==false){
 
         return json(array("code"=>0,"del_num"=>0,"msg"=>"删除失败，您没有删除系统日志的权限"));
 
@@ -157,11 +156,11 @@ write_syslog(array("log_content"=>"删除系统日志"));//记录系统日志
 打开应用配置文件：app/admin/config/app.php，找到：
 
 //分类，栏目类型ID
-'caozha_category_types' => array(0 => "内部栏目",1 => "单网页",2 => "外部链接"),
+'dengcao_category_types' => array(0 => "内部栏目",1 => "单网页",2 => "外部链接"),
 //分类，模型ID，0=系统，1=文章`
-'caozha_category_modelid' => array(0 => "系统内置",1 => "文章模型",2 => "下载模型",3 => "图片模型",4 => "视频模型"),
+'dengcao_category_modelid' => array(0 => "系统内置",1 => "文章模型",2 => "下载模型",3 => "图片模型",4 => "视频模型"),
 
-此处可以配置分类的类型，模型。对应数据库表为：cz_category。
+此处可以配置分类的类型，模型。对应数据库表为：dc_category。
 
 另外，有一点值得说明的是，在控制器app\admin\controller\Category.php下，有一个方法：delete_category_content($catid, $modelid)，需要在您开发的时候加上删除文章、图片等数据的代码（如果有的话）。
 
@@ -172,7 +171,7 @@ write_syslog(array("log_content"=>"删除系统日志"));//记录系统日志
 打开应用配置文件：app/admin/config/app.php，找到：
 
 //文章，状态`
-'caozha_article_status' => array(0 => "无效",1 => "在审",2 => "退稿",9 => "通过"),`
+'dengcao_article_status' => array(0 => "无效",1 => "在审",2 => "退稿",9 => "通过"),`
 
 此处可以配置文章审核状态，会在全局起作用。
 
@@ -185,7 +184,7 @@ write_syslog(array("log_content"=>"删除系统日志"));//记录系统日志
 打开应用配置文件：app/admin/config/app.php，找到：
 
 //会员，实名状态
-'caozha_member_isrn' => array(0 => "否",1 => "是",2 => "待审"),
+'dengcao_member_isrn' => array(0 => "否",1 => "是",2 => "待审"),
 
 此处可以设置会员的实名状态。
 
@@ -200,15 +199,15 @@ write_syslog(array("log_content"=>"删除系统日志"));//记录系统日志
 插入评论：
 
 <script>
-        cz_cmt_template="/index/comment/template.html";//模板页接口
-        cz_cmt_list="/index/comment/list.html";//读取评论列表接口
-        cz_cmt_doaction="/index/comment/doaction.html";//发布评论接口
-        cz_cmt_dolike="/index/comment/dolike.html";//点赞或踩接口
-        cz_cmt_userinfo="/index/comment/userinfo.html";//获取会员信息
+        dc_cmt_template="/index/comment/template.html";//模板页接口
+        dc_cmt_list="/index/comment/list.html";//读取评论列表接口
+        dc_cmt_doaction="/index/comment/doaction.html";//发布评论接口
+        dc_cmt_dolike="/index/comment/dolike.html";//点赞或踩接口
+        dc_cmt_userinfo="/index/comment/userinfo.html";//获取会员信息
     </script>
     <div class="pinglun">
         <div class="pl-520am" data-cmtid="act_1" data-catid="0" data-pagesize="5" data-scrollload="1" data-scrollbottom="50" data-showhot="3" data-hotpagesize="3"></div>
-        <script type="text/javascript" src="/static/index/cz_cmt/api.js"></script>
+        <script type="text/javascript" src="/static/index/dc_cmt/api.js"></script>
     </div>
 
 上面的data-cmtid是评论标识符ID，data-catid是评论标识符分类ID，这两个参数是用来区分文章等评论的，一般情况下使用data-cmtid就足够了。
@@ -220,7 +219,7 @@ write_syslog(array("log_content"=>"删除系统日志"));//记录系统日志
 
 8、修改后台默认界面
 
-打开public/static/admin/caozha/js/all.js文件，将代码：
+打开public/static/admin/dengcao/js/all.js文件，将代码：
 
 var layuimini_bgColorDefault=3;
 

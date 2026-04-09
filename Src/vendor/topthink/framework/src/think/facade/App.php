@@ -2,13 +2,13 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace think\facade;
 
@@ -36,7 +36,7 @@ use think\Facade;
  * @method static string getConfigPath() 获取应用配置目录
  * @method static string getConfigExt() 获取配置后缀
  * @method static float getBeginTime() 获取应用开启时间
- * @method static integer getBeginMem() 获取应用初始内存占用
+ * @method static int getBeginMem() 获取应用初始内存占用
  * @method static \think\App initialize() 初始化应用
  * @method static bool initialized() 是否初始化过
  * @method static void loadLangPack(string $langset) 加载语言包

@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -26,25 +26,27 @@ class Lang
      */
     protected $config = [
         // 默认语言
-        'default_lang'    => 'zh-cn',
+        'default_lang'        => 'zh-cn',
+        // 自动侦测浏览器语言
+        'auto_detect_browser' => true,
         // 允许的语言列表
-        'allow_lang_list' => [],
+        'allow_lang_list'     => [],
         // 是否使用Cookie记录
-        'use_cookie'      => true,
+        'use_cookie'          => true,
         // 扩展语言包
-        'extend_list'     => [],
+        'extend_list'         => [],
         // 多语言cookie变量
-        'cookie_var'      => 'think_lang',
+        'cookie_var'          => 'think_lang',
         // 多语言header变量
-        'header_var'      => 'think-lang',
+        'header_var'          => 'think-lang',
         // 多语言自动侦测变量名
-        'detect_var'      => 'lang',
+        'detect_var'          => 'lang',
         // Accept-Language转义为对应语言包名称
-        'accept_language' => [
+        'accept_language'     => [
             'zh-hans-cn' => 'zh-cn',
         ],
         // 是否支持语言分组
-        'allow_group'     => false,
+        'allow_group'         => false,
     ];
 
     /**
@@ -136,7 +138,7 @@ class Lang
             $this->app->getThinkPath() . 'lang' . DIRECTORY_SEPARATOR . $langset . '.php',
         ]);
 
-        // 加载系统语言包
+        // 加载应用语言包（支持多种类型）
         $files = glob($this->app->getAppPath() . 'lang' . DIRECTORY_SEPARATOR . $langset . '.*');
         $this->load($files);
 
@@ -186,47 +188,29 @@ class Lang
      */
     protected function parse(string $file): array
     {
-        $type = pathinfo($file, PATHINFO_EXTENSION);
+        $type   = pathinfo($file, PATHINFO_EXTENSION);
+        $result = match ($type) {
+            'php'         => include $file,
+            'yml', 'yaml' => function_exists('yaml_parse_file') ? yaml_parse_file($file) : [],
+            'json'        => json_decode(file_get_contents($file), true),
+            default       => [],
+        };
 
-        switch ($type) {
-            case 'php':
-                $result = include $file;
-                break;
-            case 'yml':
-            case 'yaml':
-                if (function_exists('yaml_parse_file')) {
-                    $result = yaml_parse_file($file);
-                }
-                break;
-            case 'json':
-                $data = file_get_contents($file);
-
-                if (false !== $data) {
-                    $data = json_decode($data, true);
-
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        $result = $data;
-                    }
-                }
-
-                break;
-        }
-
-        return isset($result) && is_array($result) ? $result : [];
+        return is_array($result) ? $result : [];
     }
 
     /**
      * 判断是否存在语言定义(不区分大小写)
      * @access public
-     * @param string|null $name  语言变量
-     * @param string      $range 语言作用域
+     * @param string  $name  语言变量
+     * @param string  $range 语言作用域
      * @return bool
      */
     public function has(string $name, string $range = ''): bool
     {
         $range = $range ?: $this->range;
 
-        if ($this->config['allow_group'] && strpos($name, '.')) {
+        if ($this->config['allow_group'] && str_contains($name, '.')) {
             [$name1, $name2] = explode('.', $name, 2);
             return isset($this->lang[$range][strtolower($name1)][$name2]);
         }
@@ -242,7 +226,7 @@ class Lang
      * @param string      $range 语言作用域
      * @return mixed
      */
-    public function get(string $name = null, array $vars = [], string $range = '')
+    public function get(?string $name = null, array $vars = [], string $range = '')
     {
         $range = $range ?: $this->range;
 
@@ -255,7 +239,7 @@ class Lang
             return $this->lang[$range] ?? [];
         }
 
-        if ($this->config['allow_group'] && strpos($name, '.')) {
+        if ($this->config['allow_group'] && str_contains($name, '.')) {
             [$name1, $name2] = explode('.', $name, 2);
 
             $value = $this->lang[$range][strtolower($name1)][$name2] ?? $name;
@@ -286,5 +270,4 @@ class Lang
 
         return $value;
     }
-
 }

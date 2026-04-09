@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 // 应用公共文件
@@ -92,18 +92,18 @@ function comment_face(){
 }
 
 //应用的名称及版本
-$GLOBALS["caozha_common_config"] = [
-    "name" => "caozha-admin",
-    "version" => "1.9.2",
-    "gitee" => "dengzhenhua/caozha-admin",
-    "github" => "dengcao/caozha-admin",
+$GLOBALS["dengcao_common_config"] = [
+    "name" => "dc-admin",
+    "version" => "2.0",
+    "gitee" => "dengzhenhua/dc-admin",
+    "github" => "dengcao/dc-admin",
 ];
 
-//caozha-admin 程序名称及版本，用于标识和升级，勿删改
-$GLOBALS["caozha_admin_sys"] = array(
-    "name" => "caozha-admin",
-    "version" => "1.9.2",
-    "url" => "https://gitee.com/dengzhenhua/caozha-admin",
+//dc-admin 程序名称及版本，用于标识和升级，勿删改
+$GLOBALS["dengcao_admin_sys"] = array(
+    "name" => "dc-admin",
+    "version" => "2.0",
+    "url" => "https://gitee.com/dengzhenhua/dc-admin",
 );
 
 /**
@@ -121,8 +121,8 @@ function get_cz_path(){
  * @return string
  */
 function get_cz_name(){
-    global $caozha_common_config;
-    return $caozha_common_config["name"];
+    global $dengcao_common_config;
+    return $dengcao_common_config["name"];
 }
 
 /**
@@ -130,6 +130,6 @@ function get_cz_name(){
  * @return string
  */
 function get_cz_version(){
-    global $caozha_common_config;
-    return $caozha_common_config["version"];
+    global $dengcao_common_config;
+    return $dengcao_common_config["version"];
 }

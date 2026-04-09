@@ -2,13 +2,13 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: yunwuxin <448901948@qq.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace think\service;
 
@@ -26,6 +26,12 @@ class ModelService extends Service
         Model::setEvent($this->app->event);
         Model::setInvoker([$this->app, 'invoke']);
         Model::maker(function (Model $model) {
+            if (method_exists($model, 'setOption')) {
+                // 兼容ORM4.0 
+                $model->setOption('db', $this->app->db);
+                $model->setOption('event', $this->app->event);
+                $model->setOption('invoker', [$this->app, 'invoke']);
+            }
             $config = $this->app->config;
 
             $isAutoWriteTimestamp = $model->getAutoWriteTimestamp();
@@ -47,7 +53,6 @@ class ModelService extends Service
                 [$createTime, $updateTime] = explode(',', $timeField);
                 $model->setTimeField($createTime, $updateTime);
             }
-
         });
     }
 }

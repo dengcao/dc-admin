@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -21,56 +22,54 @@ use PhpOffice\PhpWord\Exception\InvalidObjectException;
 use PhpOffice\PhpWord\Style\Image as ImageStyle;
 
 /**
- * OLEObject element
+ * OLEObject element.
  */
 class OLEObject extends AbstractElement
 {
     /**
-     * Ole-Object Src
+     * Ole-Object Src.
      *
      * @var string
      */
     private $source;
 
     /**
-     * Image Style
+     * Image Style.
      *
-     * @var \PhpOffice\PhpWord\Style\Image
+     * @var ?ImageStyle
      */
     private $style;
 
     /**
-     * Icon
+     * Icon.
      *
      * @var string
      */
     private $icon;
 
     /**
-     * Image Relation ID
+     * Image Relation ID.
      *
      * @var int
      */
     private $imageRelationId;
 
     /**
-     * Has media relation flag; true for Link, Image, and Object
+     * Has media relation flag; true for Link, Image, and Object.
      *
      * @var bool
      */
     protected $mediaRelation = true;
 
     /**
-     * Create a new Ole-Object Element
+     * Create a new Ole-Object Element.
      *
      * @param string $source
      * @param mixed $style
-     *
-     * @throws \PhpOffice\PhpWord\Exception\InvalidObjectException
      */
     public function __construct($source, $style = null)
     {
-        $supportedTypes = array('xls', 'doc', 'ppt', 'xlsx', 'docx', 'pptx');
+        $supportedTypes = ['xls', 'doc', 'ppt', 'xlsx', 'docx', 'pptx'];
         $pathInfo = pathinfo($source);
 
         if (file_exists($source) && in_array($pathInfo['extension'], $supportedTypes)) {
@@ -90,7 +89,7 @@ class OLEObject extends AbstractElement
     }
 
     /**
-     * Get object source
+     * Get object source.
      *
      * @return string
      */
@@ -100,9 +99,9 @@ class OLEObject extends AbstractElement
     }
 
     /**
-     * Get object style
+     * Get object style.
      *
-     * @return \PhpOffice\PhpWord\Style\Image
+     * @return ?ImageStyle
      */
     public function getStyle()
     {
@@ -110,7 +109,7 @@ class OLEObject extends AbstractElement
     }
 
     /**
-     * Get object icon
+     * Get object icon.
      *
      * @return string
      */
@@ -120,7 +119,7 @@ class OLEObject extends AbstractElement
     }
 
     /**
-     * Get image relation ID
+     * Get image relation ID.
      *
      * @return int
      */
@@ -134,36 +133,8 @@ class OLEObject extends AbstractElement
      *
      * @param int $rId
      */
-    public function setImageRelationId($rId)
+    public function setImageRelationId($rId): void
     {
         $this->imageRelationId = $rId;
-    }
-
-    /**
-     * Get Object ID
-     *
-     * @deprecated 0.10.0
-     *
-     * @return int
-     *
-     * @codeCoverageIgnore
-     */
-    public function getObjectId()
-    {
-        return $this->relationId + 1325353440;
-    }
-
-    /**
-     * Set Object ID
-     *
-     * @deprecated 0.10.0
-     *
-     * @param int $objId
-     *
-     * @codeCoverageIgnore
-     */
-    public function setObjectId($objId)
-    {
-        $this->relationId = $objId;
     }
 }

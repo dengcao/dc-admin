@@ -15,5 +15,5 @@ return [
     // 过期时间
     'expire'         => 7200,//7200秒=2小时
     // 前缀
-    'prefix'         => 'caozha_',
+    'prefix'         => '',
 ];

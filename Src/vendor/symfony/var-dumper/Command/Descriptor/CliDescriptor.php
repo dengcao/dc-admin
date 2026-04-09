@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\VarDumper\Command\Descriptor;
 
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -27,14 +26,11 @@ use Symfony\Component\VarDumper\Dumper\CliDumper;
  */
 class CliDescriptor implements DumpDescriptorInterface
 {
-    private $dumper;
-    private $lastIdentifier;
-    private $supportsHref;
+    private mixed $lastIdentifier = null;
 
-    public function __construct(CliDumper $dumper)
-    {
-        $this->dumper = $dumper;
-        $this->supportsHref = method_exists(OutputFormatterStyle::class, 'setHref');
+    public function __construct(
+        private CliDumper $dumper,
+    ) {
     }
 
     public function describe(OutputInterface $output, Data $data, array $context, int $clientId): void
@@ -50,7 +46,7 @@ class CliDescriptor implements DumpDescriptorInterface
         if (isset($context['request'])) {
             $request = $context['request'];
             $this->lastIdentifier = $request['identifier'];
-            $section = sprintf('%s %s', $request['method'], $request['uri']);
+            $section = \sprintf('%s %s', $request['method'], $request['uri']);
             if ($controller = $request['controller']) {
                 $rows[] = ['controller', rtrim($this->dumper->dump($controller, true), "\n")];
             }
@@ -65,10 +61,9 @@ class CliDescriptor implements DumpDescriptorInterface
 
         if (isset($context['source'])) {
             $source = $context['source'];
-            $sourceInfo = sprintf('%s on line %d', $source['name'], $source['line']);
-            $fileLink = $source['file_link'] ?? null;
-            if ($this->supportsHref && $fileLink) {
-                $sourceInfo = sprintf('<href=%s>%s</>', $fileLink, $sourceInfo);
+            $sourceInfo = \sprintf('%s on line %d', $source['name'], $source['line']);
+            if ($fileLink = $source['file_link'] ?? null) {
+                $sourceInfo = \sprintf('<href=%s>%s</>', $fileLink, $sourceInfo);
             }
             $rows[] = ['source', $sourceInfo];
             $file = $source['file_relative'] ?? $source['file'];
@@ -76,11 +71,6 @@ class CliDescriptor implements DumpDescriptorInterface
         }
 
         $io->table([], $rows);
-
-        if (!$this->supportsHref && isset($fileLink)) {
-            $io->writeln(['<info>Open source in your IDE/browser:</info>', $fileLink]);
-            $io->newLine();
-        }
 
         $this->dumper->dump($data);
         $io->newLine();

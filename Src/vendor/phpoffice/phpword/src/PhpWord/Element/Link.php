@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -22,54 +23,54 @@ use PhpOffice\PhpWord\Style\Font;
 use PhpOffice\PhpWord\Style\Paragraph;
 
 /**
- * Link element
+ * Link element.
  */
 class Link extends AbstractElement
 {
     /**
-     * Link source
+     * Link source.
      *
      * @var string
      */
     private $source;
 
     /**
-     * Link text
+     * Link text.
      *
      * @var string
      */
     private $text;
 
     /**
-     * Font style
+     * Font style.
      *
-     * @var string|\PhpOffice\PhpWord\Style\Font
+     * @var null|Font|string
      */
     private $fontStyle;
 
     /**
-     * Paragraph style
+     * Paragraph style.
      *
-     * @var string|\PhpOffice\PhpWord\Style\Paragraph
+     * @var null|Paragraph|string
      */
     private $paragraphStyle;
 
     /**
-     * Has media relation flag; true for Link, Image, and Object
+     * Has media relation flag; true for Link, Image, and Object.
      *
      * @var bool
      */
     protected $mediaRelation = true;
 
     /**
-     * Has internal flag - anchor to internal bookmark
+     * Has internal flag - anchor to internal bookmark.
      *
      * @var bool
      */
     protected $internal = false;
 
     /**
-     * Create a new Link Element
+     * Create a new Link Element.
      *
      * @param string $source
      * @param string $text
@@ -80,14 +81,14 @@ class Link extends AbstractElement
     public function __construct($source, $text = null, $fontStyle = null, $paragraphStyle = null, $internal = false)
     {
         $this->source = SharedText::toUTF8($source);
-        $this->text = is_null($text) ? $this->source : SharedText::toUTF8($text);
+        $this->text = null === $text ? $this->source : SharedText::toUTF8($text);
         $this->fontStyle = $this->setNewStyle(new Font('text'), $fontStyle);
         $this->paragraphStyle = $this->setNewStyle(new Paragraph(), $paragraphStyle);
         $this->internal = $internal;
     }
 
     /**
-     * Get link source
+     * Get link source.
      *
      * @return string
      */
@@ -97,19 +98,17 @@ class Link extends AbstractElement
     }
 
     /**
-     * Get link text
-     *
-     * @return string
+     * Get link text.
      */
-    public function getText()
+    public function getText(): string
     {
         return $this->text;
     }
 
     /**
-     * Get Text style
+     * Get Text style.
      *
-     * @return string|\PhpOffice\PhpWord\Style\Font
+     * @return null|Font|string
      */
     public function getFontStyle()
     {
@@ -117,9 +116,9 @@ class Link extends AbstractElement
     }
 
     /**
-     * Get Paragraph style
+     * Get Paragraph style.
      *
-     * @return string|\PhpOffice\PhpWord\Style\Paragraph
+     * @return null|Paragraph|string
      */
     public function getParagraphStyle()
     {
@@ -127,49 +126,7 @@ class Link extends AbstractElement
     }
 
     /**
-     * Get link target
-     *
-     * @deprecated 0.12.0
-     *
-     * @return string
-     *
-     * @codeCoverageIgnore
-     */
-    public function getTarget()
-    {
-        return $this->source;
-    }
-
-    /**
-     * Get Link source
-     *
-     * @deprecated 0.10.0
-     *
-     * @return string
-     *
-     * @codeCoverageIgnore
-     */
-    public function getLinkSrc()
-    {
-        return $this->getSource();
-    }
-
-    /**
-     * Get Link name
-     *
-     * @deprecated 0.10.0
-     *
-     * @return string
-     *
-     * @codeCoverageIgnore
-     */
-    public function getLinkName()
-    {
-        return $this->getText();
-    }
-
-    /**
-     * is internal
+     * is internal.
      *
      * @return bool
      */

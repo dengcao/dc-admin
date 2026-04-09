@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -25,14 +25,10 @@ use think\Response;
  */
 class LoadLangPack
 {
-    protected $app;
-    protected $lang;
     protected $config;
 
-    public function __construct(App $app, Lang $lang, Config $config)
+    public function __construct(protected App $app, protected Lang $lang, Config $config)
     {
-        $this->app    = $app;
-        $this->lang   = $lang;
         $this->config = $lang->getConfig();
     }
 
@@ -43,7 +39,7 @@ class LoadLangPack
      * @param Closure $next
      * @return Response
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         // 自动侦测当前语言
         $langset = $this->detect($request);
@@ -77,7 +73,7 @@ class LoadLangPack
         } elseif ($request->cookie($this->config['cookie_var'])) {
             // Cookie中设置了语言变量
             $langSet = $request->cookie($this->config['cookie_var']);
-        } elseif ($request->server('HTTP_ACCEPT_LANGUAGE')) {
+        } elseif ($this->config['auto_detect_browser'] && $request->server('HTTP_ACCEPT_LANGUAGE')) {
             // 自动侦测浏览器语言
             $langSet = $request->server('HTTP_ACCEPT_LANGUAGE');
         }
@@ -108,11 +104,10 @@ class LoadLangPack
      * @param string $langSet 语言
      * @return void
      */
-    protected function saveToCookie(Cookie $cookie, string $langSet)
+    protected function saveToCookie(Cookie $cookie, string $langSet): void
     {
         if ($this->config['use_cookie']) {
             $cookie->set($this->config['cookie_var'], $langSet);
         }
     }
-
 }

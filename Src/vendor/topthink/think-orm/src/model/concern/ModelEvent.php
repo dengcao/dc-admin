@@ -1,8 +1,9 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -12,75 +13,71 @@ declare (strict_types = 1);
 
 namespace think\model\concern;
 
+use ReflectionClass;
 use think\db\exception\ModelEventException;
 use think\helper\Str;
 
 /**
- * 模型事件处理
+ * 模型事件处理.
  */
 trait ModelEvent
 {
-
     /**
-     * Event对象
-     * @var object
-     */
-    protected static $event;
-
-    /**
-     * 是否需要事件响应
-     * @var bool
-     */
-    protected $withEvent = true;
-
-    /**
-     * 设置Event对象
-     * @access public
+     * 设置Event对象 （用于兼容）
+     *
      * @param object $event Event对象
+     *
      * @return void
      */
     public static function setEvent($event)
-    {
-        self::$event = $event;
-    }
+    {}
 
     /**
-     * 当前操作的事件响应
-     * @access protected
-     * @param  bool $event  是否需要事件响应
+     * 当前操作的事件响应.
+     *
+     * @param bool $event 是否需要事件响应
+     *
      * @return $this
      */
     public function withEvent(bool $event)
     {
-        $this->withEvent = $event;
-        return $this;
+        return $this->setOption('withEvent', $event);
     }
 
     /**
-     * 触发事件
-     * @access protected
-     * @param  string $event 事件名
+     * 触发事件.
+     *
+     * @param string $event 事件名
+     *
      * @return bool
      */
     protected function trigger(string $event): bool
     {
-        if (!$this->withEvent) {
+        if (!$this->getOption('withEvent', true)) {
             return true;
         }
 
-        $call = 'on' . Str::studly($event);
-
+        $method = 'on' . Str::studly($event);
+        $obj    = $this->getOption('event');
+        $obser  = $this->getOption('eventObserver');
         try {
-            if (method_exists(static::class, $call)) {
-                $result = call_user_func([static::class, $call], $this);
-            } elseif (is_object(self::$event) && method_exists(self::$event, 'trigger')) {
-                $result = self::$event->trigger('model.' . static::class . '.' . $event, $this);
+            if ($obser) {
+                $reflect  = new ReflectionClass($obser);
+                $observer = $reflect->newinstance();
+            } else {
+                $observer = $this;
+            }
+
+            if (method_exists($observer, $method)) {
+                $result = $this->invoke([$observer, $method], [$this]);
+            } elseif (is_object($obj) && method_exists($obj, 'trigger')) {
+                $result = $obj->trigger(static::class . '.' . $event, $this);
                 $result = empty($result) ? true : end($result);
             } else {
                 $result = true;
             }
 
-            return false === $result ? false : true;
+            return false !== $result;
         } catch (ModelEventException $e) {
             return false;
         }

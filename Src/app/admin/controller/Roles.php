@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -19,11 +19,11 @@ use think\facade\Cache;
 class Roles
 {
     protected $middleware = [
-        'caozha_auth' => ['except' => ''],//验证是否管理员
+        'dengcao_auth' => ['except' => ''],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("roles");//检测是否有权限
+        dc_auth("roles");//检测是否有权限
     }
 
     public function index()
@@ -70,11 +70,11 @@ class Roles
     {
         $role_id = Request::param("role_id", '', 'filter_sql');
         if (!is_numeric($role_id)) {
-            caozha_error("参数错误", "", 1);
+            dengcao_error("参数错误", "", 1);
         }
         $roles = RolesModel::where("role_id", "=", $role_id)->findOrEmpty();
         if ($roles->isEmpty()) {
-            caozha_error("[ID:" . $role_id . "]权限组不存在。", "", 1);
+            dengcao_error("[ID:" . $role_id . "]权限组不存在。", "", 1);
         } else {
             View::assign([
                 'roles' => $roles
@@ -116,14 +116,14 @@ class Roles
     {
         $role_id = Request::param("role_id", '', 'filter_sql');
         if (!is_numeric($role_id)) {
-            caozha_error("参数错误", "", 1);
+            dengcao_error("参数错误", "", 1);
         }
         $roles = RolesModel::where("role_id", "=", $role_id)->withAttr('is_enabled', function ($value) {
             $is_enabled = [0 => '<i class="layui-icon layui-icon-close hese"></i>', 1 => '<i class="layui-icon layui-icon-ok olivedrab"></i>'];
             return $is_enabled[$value];
         })->findOrEmpty();
         if ($roles->isEmpty()) {
-            caozha_error("[ID:" . $role_id . "]权限组不存在。", "", 1);
+            dengcao_error("[ID:" . $role_id . "]权限组不存在。", "", 1);
         } else {
             View::assign([
                 'roles' => $roles
@@ -164,7 +164,7 @@ class Roles
 
     public function getRolesConfig()//获取权限组配置的数据
     {
-        $init_config = Config::get("app.caozha_role_auths");
+        $init_config = Config::get("app.dengcao_role_auths");
         $list = [];
         foreach ($init_config as $key => $val) {
             $list[] = array("role" => $key, "name" => $val["name"], "remarks" => $val["remarks"]);
@@ -195,7 +195,7 @@ class Roles
             $role = $roles->roles;//获取role_id对应权限组的权限
         }
 
-        $init_config = Config::get("app.caozha_role_auths");
+        $init_config = Config::get("app.dengcao_role_auths");
         $list = [];
 
         foreach ($init_config as $key => $val) {
@@ -227,7 +227,7 @@ class Roles
             return json(array());
         }
 
-        $init_config = Config::get("app.caozha_role_auths");
+        $init_config = Config::get("app.dengcao_role_auths");
         $list = [];
 
         $role_arr = explode(",", $role);

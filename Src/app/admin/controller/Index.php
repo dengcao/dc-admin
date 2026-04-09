@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -22,7 +22,7 @@ use app\admin\model\Administrators as AdministratorsModel;
 class Index
 {
     protected $middleware = [
-        'caozha_auth' 	=> ['except' => 'login,checkLogin,captcha' ],//验证管理员
+        'dengcao_auth' 	=> ['except' => 'login,checkLogin,captcha' ],//验证管理员
     ];
 
     public function index()
@@ -94,11 +94,11 @@ class Index
     {
         $aid=Request::param("aid",'','filter_sql');
         if(!is_numeric($aid)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $article=ArticleModel::where("aid","=",$aid)->with('category')->withAttr('status', function($value) {
             //$status = [0=>'无效',1=>'在审',2=>'<font color="red">退稿</font>,9=>\'<font color="green">通过</font>\''];
-            $status = Config::get("app.caozha_article_status");
+            $status = Config::get("app.dengcao_article_status");
             return $status[$value];
         })->withAttr('islink', function($value) {
             $islink = [0=>'否',1=>'是'];
@@ -117,7 +117,7 @@ class Index
             return $islink[$value];
         })->findOrEmpty();
         if ($article->isEmpty()) {
-            caozha_error("[ID:".$aid."]文章不存在。","",1);
+            dengcao_error("[ID:".$aid."]文章不存在。","",1);
         }else{
             $article->hits += 1;
             $article->save();
@@ -188,8 +188,8 @@ class Index
             ini_set('session.gc_maxlifetime', "86400"); // 有效期，86400秒=24小时
             ini_set("session.cookie_lifetime","86400");
             session_start();
-            $_SESSION["caozha_admin_id"]=$admin->admin_id;
-            $_SESSION["caozha_admin_name"]=$admin->admin_name;
+            $_SESSION["dengcao_admin_id"]=$admin->admin_id;
+            $_SESSION["dengcao_admin_name"]=$admin->admin_name;
             //end
 
             write_syslog(array("log_content"=>"登陆成功"));//记录系统日志
@@ -211,11 +211,11 @@ class Index
 
         //清空 （原session赋值给外部程序调用）
         session_start();
-        if(isset($_SESSION["caozha_admin_id"])){unset($_SESSION["caozha_admin_id"]);}
-        if(isset($_SESSION["caozha_admin_name"])){unset($_SESSION["caozha_admin_name"]);}
+        if(isset($_SESSION["dengcao_admin_id"])){unset($_SESSION["dengcao_admin_id"]);}
+        if(isset($_SESSION["dengcao_admin_name"])){unset($_SESSION["dengcao_admin_name"]);}
         //end
 
-        caozha_success("退出登陆成功！",url("admin/index/login"));
+        dengcao_success("退出登陆成功！",url("admin/index/login"));
     }
 
     public function cacheClear()//清空缓存
@@ -228,7 +228,7 @@ class Index
 
     public function czInit()//初始化菜单
     {
-        $init_config=Config::get("app.caozha_init_config");
+        $init_config=Config::get("app.dengcao_init_config");
         return json(json_decode($init_config));
     }
 
@@ -239,7 +239,7 @@ class Index
 
     public function mapMenus()//后台地图菜单
     {
-        $init_config=Config::get("app.caozha_init_config");
+        $init_config=Config::get("app.dengcao_init_config");
         $menus=json_decode($init_config,true)["menuInfo"];
         $menus_data=tree_menus($menus);
         $menus_arr=array(

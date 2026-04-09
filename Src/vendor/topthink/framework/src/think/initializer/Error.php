@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -36,6 +36,7 @@ class Error
     {
         $this->app = $app;
         error_reporting(E_ALL);
+        ini_set('display_errors', 'Off');
         set_error_handler([$this, 'appError']);
         set_exception_handler([$this, 'appException']);
         register_shutdown_function([$this, 'appShutdown']);
@@ -55,17 +56,19 @@ class Error
         if ($this->app->runningInConsole()) {
             $handler->renderForConsole(new ConsoleOutput, $e);
         } else {
-            $handler->render($this->app->request, $e)->send();
+            $response = $handler->render($this->app->request, $e);
+            $response->send();
+            $this->app->http->end($response);
         }
     }
 
     /**
      * Error Handler
      * @access public
-     * @param integer $errno   错误编号
-     * @param string  $errstr  详细错误信息
-     * @param string  $errfile 出错的文件
-     * @param integer $errline 出错行号
+     * @param int    $errno   错误编号
+     * @param string $errstr  详细错误信息
+     * @param string $errfile 出错的文件
+     * @param int    $errline 出错行号
      * @throws ErrorException
      */
     public function appError(int $errno, string $errstr, string $errfile = '', int $errline = 0): void

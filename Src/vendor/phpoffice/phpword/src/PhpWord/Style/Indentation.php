@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Style;
 
 /**
- * Paragraph indentation style
+ * Paragraph indentation style.
  *
  * @see  http://www.schemacentral.com/sc/ooxml/t-w_CT_Ind.html
  * @since 0.10.0
@@ -26,131 +27,136 @@ namespace PhpOffice\PhpWord\Style;
 class Indentation extends AbstractStyle
 {
     /**
-     * Left indentation (twip)
+     * Left indentation (twip).
      *
-     * @var int|float
+     * @var null|float
      */
     private $left = 0;
 
     /**
-     * Right indentation (twip)
+     * Right indentation (twip).
      *
-     * @var int|float
+     * @var null|float
      */
     private $right = 0;
 
     /**
-     * Additional first line indentation (twip)
+     * Additional first line indentation (twip).
      *
-     * @var int|float
+     * @var null|float
      */
-    private $firstLine;
+    private $firstLine = 0;
 
     /**
-     * Indentation removed from first line (twip)
+     * Additional first line chars indentation (twip).
      *
-     * @var int|float
+     * @var int
      */
-    private $hanging;
+    private $firstLineChars = 0;
 
     /**
-     * Create a new instance
+     * Indentation removed from first line (twip).
+     *
+     * @var null|float
+     */
+    private $hanging = 0;
+
+    /**
+     * Create a new instance.
      *
      * @param array $style
      */
-    public function __construct($style = array())
+    public function __construct($style = [])
     {
         $this->setStyleByArray($style);
     }
 
     /**
-     * Get left
-     *
-     * @return int|float
+     * Get left.
      */
-    public function getLeft()
+    public function getLeft(): ?float
     {
         return $this->left;
     }
 
     /**
-     * Set left
-     *
-     * @param int|float $value
-     * @return self
+     * Set left.
      */
-    public function setLeft($value = null)
+    public function setLeft(?float $value): self
     {
-        $this->left = $this->setNumericVal($value, $this->left);
+        $this->left = $this->setNumericVal($value);
 
         return $this;
     }
 
     /**
-     * Get right
-     *
-     * @return int|float
+     * Get right.
      */
-    public function getRight()
+    public function getRight(): ?float
     {
         return $this->right;
     }
 
     /**
-     * Set right
-     *
-     * @param int|float $value
-     * @return self
+     * Set right.
      */
-    public function setRight($value = null)
+    public function setRight(?float $value): self
     {
-        $this->right = $this->setNumericVal($value, $this->right);
+        $this->right = $this->setNumericVal($value);
 
         return $this;
     }
 
     /**
-     * Get first line
-     *
-     * @return int|float
+     * Get first line.
      */
-    public function getFirstLine()
+    public function getFirstLine(): ?float
     {
         return $this->firstLine;
     }
 
     /**
-     * Set first line
-     *
-     * @param int|float $value
-     * @return self
+     * Set first line.
      */
-    public function setFirstLine($value = null)
+    public function setFirstLine(?float $value): self
     {
-        $this->firstLine = $this->setNumericVal($value, $this->firstLine);
+        $this->firstLine = $this->setNumericVal($value);
 
         return $this;
     }
 
     /**
-     * Get hanging
-     *
-     * @return int|float
+     * Get first line chars.
      */
-    public function getHanging()
+    public function getFirstLineChars(): int
+    {
+        return $this->firstLineChars;
+    }
+
+    /**
+     * Set first line chars.
+     */
+    public function setFirstLineChars(int $value): self
+    {
+        $this->firstLineChars = $this->setIntVal($value, $this->firstLineChars);
+
+        return $this;
+    }
+
+    /**
+     * Get hanging.
+     */
+    public function getHanging(): ?float
     {
         return $this->hanging;
     }
 
     /**
-     * Set hanging
-     *
-     * @param int|float $value
-     * @return self
+     * Set hanging.
      */
-    public function setHanging($value = null)
+    public function setHanging(?float $value = null): self
     {
-        $this->hanging = $this->setNumericVal($value, $this->hanging);
+        $this->hanging = $this->setNumericVal($value);
 
         return $this;
     }

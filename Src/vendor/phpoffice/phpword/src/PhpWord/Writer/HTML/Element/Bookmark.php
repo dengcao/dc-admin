@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,21 +12,21 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Writer\HTML\Element;
 
 /**
- * Bookmark element HTML writer
+ * Bookmark element HTML writer.
  *
  * @since 0.15.0
  */
 class Bookmark extends Text
 {
     /**
-     * Write bookmark
+     * Write bookmark.
      *
      * @return string
      */

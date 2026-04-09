@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,30 +12,29 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Reader;
 
+use Exception;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Reader\RTF\Document;
 
 /**
- * RTF Reader class
+ * RTF Reader class.
  *
  * @since 0.11.0
  */
 class RTF extends AbstractReader implements ReaderInterface
 {
     /**
-     * Loads PhpWord from file
+     * Loads PhpWord from file.
      *
      * @param string $docFile
      *
-     * @throws \Exception
-     *
-     * @return \PhpOffice\PhpWord\PhpWord
+     * @return PhpWord
      */
     public function load($docFile)
     {
@@ -45,7 +45,7 @@ class RTF extends AbstractReader implements ReaderInterface
             $doc->rtf = file_get_contents($docFile);
             $doc->read($phpWord);
         } else {
-            throw new \Exception("Cannot read {$docFile}.");
+            throw new Exception("Cannot read {$docFile}.");
         }
 
         return $phpWord;

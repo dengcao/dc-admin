@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -16,11 +16,11 @@ use think\facade\View;
 class Syslog
 {
     protected $middleware = [
-        'caozha_auth' 	=> ['except' => '' ],//验证是否管理员
+        'dengcao_auth' 	=> ['except' => '' ],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("log_view");//检测是否有权限
+        dc_auth("log_view");//检测是否有权限
     }
 
     public function index()
@@ -65,11 +65,11 @@ class Syslog
     {
         $log_id=Request::param("log_id",'','filter_sql');
         if(!is_numeric($log_id)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $list=SyslogModel::where("log_id","=",$log_id)->findOrEmpty();
         if ($list->isEmpty()) {
-            caozha_error("[ID:".$log_id."]系统日志不存在。","",1);
+            dengcao_error("[ID:".$log_id."]系统日志不存在。","",1);
         }else{
             View::assign([
                 'syslog'  => $list
@@ -81,7 +81,7 @@ class Syslog
 
     public function delete()//删除日志数据
     {
-        if(is_cz_auth("log_del")==false){
+        if(is_dc_auth("log_del")==false){
             return json(array("code"=>0,"del_num"=>0,"msg"=>"删除失败，您没有删除系统日志的权限"));
         }
         //执行删除
@@ -102,7 +102,7 @@ class Syslog
 
     public function deleteAll()//删除一周以前的所有日志数据
     {
-        if(is_cz_auth("log_del")==false){
+        if(is_dc_auth("log_del")==false){
             return json(array("code"=>0,"del_num"=>0,"msg"=>"删除失败，您没有删除系统日志的权限"));
         }
         //执行删除

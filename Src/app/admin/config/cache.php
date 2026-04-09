@@ -6,7 +6,7 @@
 
 return [
     // 默认缓存驱动
-    'default' => env('cache.driver', 'file'),
+    'default' => 'file',
 
     // 缓存连接方式配置
     'stores'  => [
@@ -16,7 +16,7 @@ return [
             // 缓存保存目录
             'path'       => 'cache',
             // 缓存前缀
-            'prefix'     => 'caozha',
+            'prefix'     => 'dengcao',
             // 缓存有效期 0表示永久缓存
             'expire'     => 0,
             // 缓存标签前缀

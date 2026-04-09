@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -23,7 +24,6 @@ use PhpOffice\PhpWord\Shared\AbstractEnum;
  * Border Styles.
  *
  * @since 0.18.0
- *
  * @see  http://www.datypic.com/sc/ooxml/t-w_ST_Border.html
  */
 final class Border extends AbstractEnum

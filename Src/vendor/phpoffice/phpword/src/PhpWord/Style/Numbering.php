@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Style;
 
 /**
- * Numbering style
+ * Numbering style.
  *
  * @see  http://www.schemacentral.com/sc/ooxml/e-w_numbering.html
  * @see  http://www.schemacentral.com/sc/ooxml/e-w_abstractNum-1.html
@@ -28,45 +29,42 @@ namespace PhpOffice\PhpWord\Style;
 class Numbering extends AbstractStyle
 {
     /**
-     * Numbering definition instance ID
+     * Numbering definition instance ID.
      *
      * @var int
+     *
      * @see  http://www.schemacentral.com/sc/ooxml/e-w_num-1.html
      */
     private $numId;
 
     /**
-     * Multilevel type singleLevel|multilevel|hybridMultilevel
+     * Multilevel type singleLevel|multilevel|hybridMultilevel.
      *
      * @var string
+     *
      * @see  http://www.schemacentral.com/sc/ooxml/a-w_val-67.html
      */
     private $type;
 
     /**
-     * Numbering levels
+     * Numbering levels.
      *
      * @var NumberingLevel[]
      */
-    private $levels = array();
+    private $levels = [];
 
     /**
-     * Get Id
-     *
-     * @return int
+     * Get Id.
      */
-    public function getNumId()
+    public function getNumId(): ?int
     {
         return $this->numId;
     }
 
     /**
-     * Set Id
-     *
-     * @param int $value
-     * @return self
+     * Set Id.
      */
-    public function setNumId($value)
+    public function setNumId(int $value): self
     {
         $this->numId = $this->setIntVal($value, $this->numId);
 
@@ -74,46 +72,38 @@ class Numbering extends AbstractStyle
     }
 
     /**
-     * Get multilevel type
-     *
-     * @return string
+     * Get multilevel type.
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
     /**
-     * Set multilevel type
-     *
-     * @param string $value
-     * @return self
+     * Set multilevel type.
      */
-    public function setType($value)
+    public function setType(string $value): self
     {
-        $enum = array('singleLevel', 'multilevel', 'hybridMultilevel');
+        $enum = ['singleLevel', 'multilevel', 'hybridMultilevel'];
         $this->type = $this->setEnumVal($value, $enum, $this->type);
 
         return $this;
     }
 
     /**
-     * Get levels
+     * Get levels.
      *
      * @return NumberingLevel[]
      */
-    public function getLevels()
+    public function getLevels(): array
     {
         return $this->levels;
     }
 
     /**
-     * Set multilevel type
-     *
-     * @param array $values
-     * @return self
+     * Set multilevel type.
      */
-    public function setLevels($values)
+    public function setLevels(array $values): self
     {
         if (is_array($values)) {
             foreach ($values as $key => $value) {

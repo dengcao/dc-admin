@@ -7,7 +7,7 @@
         "thinkphp",
         "ORM"
     ],
-    "homepage": "http://thinkphp.cn/",
+    "homepage": "https://www.thinkphp.cn/",
     "license": "Apache-2.0",
     "authors": [
         {
@@ -17,24 +17,38 @@
         {
             "name": "yunwuxin",
             "email": "448901948@qq.com"
-        }        
+        }
     ],
     "require": {
-        "php": ">=7.2.5",
-        "topthink/framework": "6.0.16",
-        "topthink/think-orm": "^2.0",
-        "topthink/think-view": "^1.0",
+        "php": ">=8.0.0",
+        "topthink/framework": "^8.0",
+        "topthink/think-orm": "^3.0|^4.0",
+        "topthink/think-filesystem": "^2.0",
+        "topthink/think-migration": "^3.1",
+        "topthink/think-worker": "^4.0",
         "topthink/think-helper": "^3.1",
         "topthink/think-captcha": "^3.0",
-        "topthink/think-multi-app": "^1.0",
-        "phpoffice/phpword": "^0.18.3",
-        "phpoffice/phpspreadsheet": "^1.22",
-        "phpmailer/phpmailer": "^6.6",
-        "firebase/php-jwt": "^6.11"
+        "topthink/think-view": "^2.0",
+        "topthink/think-validate": "^3.0",
+        "phpoffice/phpword": "^1.4",
+        "phpoffice/phpspreadsheet": "^5.5",
+        "phpmailer/phpmailer": "^7.0",
+        "firebase/php-jwt": "^7.0",
+        "guzzlehttp/guzzle": "^7.10",
+        "nesbot/carbon": "^3.11",
+        "league/flysystem": "^1.1",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "monolog/monolog": "^3.10",
+        "mpdf/mpdf": "^8.3",
+        "smalot/pdfparser": "^2.12",
+        "symfony/var-dumper": "^7.4",
+        "topthink/think-annotation": "^3.0",
+        "topthink/think-cors": "^1.0",
+        "topthink/think-multi-app": "^1.1"
     },
     "require-dev": {
-        "symfony/var-dumper": "^4.2",
-        "topthink/think-trace":"^1.0"
+        "topthink/think-dumper": "^1.0",
+        "topthink/think-trace": "^2.0"
     },
     "autoload": {
         "psr-4": {

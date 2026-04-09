@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -20,42 +21,42 @@ namespace PhpOffice\PhpWord\Element;
 use PhpOffice\PhpWord\Style\Chart as ChartStyle;
 
 /**
- * Chart element
+ * Chart element.
  *
  * @since 0.12.0
  */
 class Chart extends AbstractElement
 {
     /**
-     * Is part of collection
+     * Is part of collection.
      *
      * @var bool
      */
     protected $collectionRelation = true;
 
     /**
-     * Type
+     * Type.
      *
      * @var string
      */
     private $type = 'pie';
 
     /**
-     * Series
+     * Series.
      *
      * @var array
      */
-    private $series = array();
+    private $series = [];
 
     /**
-     * Chart style
+     * Chart style.
      *
-     * @var \PhpOffice\PhpWord\Style\Chart
+     * @var ?ChartStyle
      */
     private $style;
 
     /**
-     * Create new instance
+     * Create new instance.
      *
      * @param string $type
      * @param array $categories
@@ -71,7 +72,7 @@ class Chart extends AbstractElement
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -85,30 +86,30 @@ class Chart extends AbstractElement
      *
      * @param string $value
      */
-    public function setType($value)
+    public function setType($value): void
     {
-        $enum = array('pie', 'doughnut', 'line', 'bar', 'stacked_bar', 'percent_stacked_bar', 'column', 'stacked_column', 'percent_stacked_column', 'area', 'radar', 'scatter');
+        $enum = ['pie', 'doughnut', 'line', 'bar', 'stacked_bar', 'percent_stacked_bar', 'column', 'stacked_column', 'percent_stacked_column', 'area', 'radar', 'scatter'];
         $this->type = $this->setEnumVal($value, $enum, 'pie');
     }
 
     /**
-     * Add series
+     * Add series.
      *
      * @param array $categories
      * @param array $values
      * @param null|mixed $name
      */
-    public function addSeries($categories, $values, $name = null)
+    public function addSeries($categories, $values, $name = null): void
     {
-        $this->series[] = array(
+        $this->series[] = [
             'categories' => $categories,
-            'values'     => $values,
-            'name'       => $name,
-        );
+            'values' => $values,
+            'name' => $name,
+        ];
     }
 
     /**
-     * Get series
+     * Get series.
      *
      * @return array
      */
@@ -118,9 +119,9 @@ class Chart extends AbstractElement
     }
 
     /**
-     * Get chart style
+     * Get chart style.
      *
-     * @return \PhpOffice\PhpWord\Style\Chart
+     * @return ?ChartStyle
      */
     public function getStyle()
     {

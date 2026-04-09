@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -67,7 +67,7 @@ abstract class Rule
      * 请求类型
      * @var string
      */
-    protected $method;
+    protected $method = '*';
 
     /**
      * 路由变量
@@ -86,6 +86,18 @@ abstract class Rule
      * @var array
      */
     protected $pattern = [];
+
+    /**
+     * 预定义变量规则
+     * @var array
+     */
+    protected $regex = [
+        'int'       => '\d+',
+        'float'     => '\d+\.\d+',
+        'alpha'     => '[A-Za-z]+',
+        'alphaNum'  => '[A-Za-z0-9]+',
+        'alphaDash' => '[A-Za-z0-9\-\_]+',
+    ];
 
     /**
      * 需要和分组合并的路由参数
@@ -125,12 +137,44 @@ abstract class Rule
     /**
      * 注册变量规则
      * @access public
+     * @param  array $regex 变量规则
+     * @return $this
+     */
+    public function regex(array $regex)
+    {
+        $this->regex = array_merge($this->regex, $regex);
+
+        return $this;
+    }
+
+    /**
+     * 注册变量(正则）规则
+     * @access public
      * @param  array $pattern 变量规则
      * @return $this
      */
     public function pattern(array $pattern)
     {
         $this->pattern = array_merge($this->pattern, $pattern);
+
+        return $this;
+    }
+
+    /**
+     * 注册路由变量和请求变量的匹配规则（支持验证类的所有内置规则）
+     *
+     * @access public
+     * @param  string $name 变量名
+     * @param  mixed  $rule 变量规则
+     * @return $this
+     */
+    public function when(string | array $name, $rule = null)
+    {
+        if (is_array($name)) {
+            $this->option['var_rule'] = $name;
+        } else {
+            $this->option['var_rule'][$name] = $rule;
+        }
 
         return $this;
     }
@@ -266,9 +310,7 @@ abstract class Rule
 
             // 合并分组参数
             foreach ($this->mergeOptions as $item) {
-                if (isset($parentOption[$item]) && isset($option[$item])) {
-                    $option[$item] = array_merge($parentOption[$item], $option[$item]);
-                }
+                $option[$item] = array_merge($parentOption[$item] ?? [], $option[$item] ?? []);
             }
 
             $option = array_merge($parentOption, $option);
@@ -337,6 +379,17 @@ abstract class Rule
     }
 
     /**
+     * 是否区分大小写
+     * @access public
+     * @param  bool $case 是否区分
+     * @return $this
+     */
+    public function caseUrl(bool $case)
+    {
+        return $this->setOption('case_sensitive', $case);
+    }
+
+    /**
      * 设置参数过滤检查
      * @access public
      * @param  array $filter 参数过滤
@@ -344,20 +397,63 @@ abstract class Rule
      */
     public function filter(array $filter)
     {
-        $this->option['filter'] = $filter;
+        return $this->setOption('filter', $filter);
+    }
 
-        return $this;
+    /**
+     * 检查Header信息
+     * @access public
+     * @param  array $header 
+     * @return $this
+     */
+    public function header(array $header = [])
+    {
+        return $this->setOption('header', $header);
+    }
+
+    /**
+     * 检查版本控制
+     * @access public
+     * @param  string $version 
+     * @return $this
+     */
+    public function version(string $version)
+    {
+        $key = $this->config('api_version');
+        return $this->header([$key => $version]);
+    }
+
+    /**
+     * 设置路由变量默认值
+     * @access public
+     * @param  array $default 可选路由变量默认值
+     * @return $this
+     */
+    public function default(array $default)
+    {
+        return $this->setOption('default', $default);
+    }
+
+    /**
+     * 设置路由自动注册中间件
+     * @access public
+     * @param  bool $auto 
+     * @return $this
+     */
+    public function autoMiddleware(bool $auto = true)
+    {
+        return $this->setOption('auto_middleware', $auto);
     }
 
     /**
      * 绑定模型
      * @access public
      * @param  array|string|Closure $var  路由变量名 多个使用 & 分割
-     * @param  string|Closure       $model 绑定模型类
-     * @param  bool                  $exception 是否抛出异常
+     * @param  string|Closure|null  $model 绑定模型类
+     * @param  bool                 $exception 是否抛出异常
      * @return $this
      */
-    public function model($var, $model = null, bool $exception = true)
+    public function model(array | string | Closure $var, string | Closure | null $model = null, bool $exception = true)
     {
         if ($var instanceof Closure) {
             $this->option['model'][] = $var;
@@ -380,7 +476,7 @@ abstract class Rule
      */
     public function append(array $append = [])
     {
-        $this->option['append'] = $append;
+        $this->option['append'] = array_merge($this->option['append'] ?? [], $append);
 
         return $this;
     }
@@ -388,17 +484,15 @@ abstract class Rule
     /**
      * 绑定验证
      * @access public
-     * @param  mixed  $validate 验证器类
-     * @param  string $scene 验证场景
-     * @param  array  $message 验证提示
-     * @param  bool   $batch 批量验证
+     * @param  mixed        $validate 验证器类
+     * @param  string|array $scene 验证场景
+     * @param  array        $message 验证提示
+     * @param  bool         $batch 批量验证
      * @return $this
      */
-    public function validate($validate, string $scene = null, array $message = [], bool $batch = false)
+    public function validate($validate, string | array $scene = '', array $message = [], bool $batch = false)
     {
-        $this->option['validate'] = [$validate, $scene, $message, $batch];
-
-        return $this;
+        return $this->setOption('validate', [$validate, $scene, $message, $batch]);
     }
 
     /**
@@ -408,10 +502,10 @@ abstract class Rule
      * @param mixed $params 参数
      * @return $this
      */
-    public function middleware($middleware, ...$params)
+    public function middleware(string | array | Closure $middleware, ...$params)
     {
         if (empty($params) && is_array($middleware)) {
-            $this->option['middleware'] = $middleware;
+            $this->option['middleware'] = array_merge($this->option['middleware'] ?? [], $middleware);
         } else {
             foreach ((array) $middleware as $item) {
                 $this->option['middleware'][] = [$item, $params];
@@ -419,6 +513,17 @@ abstract class Rule
         }
 
         return $this;
+    }
+
+    /**
+     * 设置不使用的中间件 留空则为全部不用
+     * @access public
+     * @param array $middleware 中间件
+     * @return $this
+     */
+    public function withoutMiddleware(array $middleware = [])
+    {
+        return $this->setOption('without_middleware', $middleware);
     }
 
     /**
@@ -446,10 +551,10 @@ abstract class Rule
     /**
      * 设置路由缓存
      * @access public
-     * @param  array|string $cache 缓存
+     * @param  array|string|int $cache 缓存
      * @return $this
      */
-    public function cache($cache)
+    public function cache(array | string | int $cache)
     {
         return $this->middleware(CheckRequestCache::class, $cache);
     }
@@ -572,14 +677,7 @@ abstract class Rule
      */
     public function crossDomainRule()
     {
-        if ($this instanceof RuleGroup) {
-            $method = '*';
-        } else {
-            $method = $this->method;
-        }
-
-        $this->router->setCrossDomainRule($this, $method);
-
+        $this->router->setCrossDomainRule($this);
         return $this;
     }
 
@@ -604,15 +702,17 @@ abstract class Rule
         // 替换路由地址中的变量
         $extraParams = true;
         $search      = $replace      = [];
-        $depr        = $this->router->config('pathinfo_depr');
+        $depr        = $this->config('pathinfo_depr');
+
         foreach ($matches as $key => $value) {
             $search[]  = '<' . $key . '>';
             $replace[] = $value;
-
+            $search[]  = '{' . $key . '}';
+            $replace[] = $value;
             $search[]  = ':' . $key;
             $replace[] = $value;
 
-            if (strpos($value, $depr)) {
+            if (str_contains($value, $depr)) {
                 $extraParams = false;
             }
         }
@@ -625,7 +725,19 @@ abstract class Rule
         if ($extraParams) {
             $count = substr_count($rule, '/');
             $url   = array_slice(explode('|', $url), $count + 1);
-            $this->parseUrlParams(implode('|', $url), $matches);
+            $this->parseUrlParams(implode('/', $url), $matches);
+        }
+
+        foreach ($matches as $key => &$val) {
+            if (isset($this->pattern[$key]) && in_array($this->pattern[$key], ['\d+', 'int', 'float'])) {
+                $val = match ($this->pattern[$key]) {
+                    'int', '\d+' => (int) $val,
+                    'float'      => (float) $val,
+                    default      => $val,
+                };
+            } elseif (in_array($key, ['__module__','__controller__','__action__'])) {
+                unset($matches[$key]);
+            }
         }
 
         $this->vars = $matches;
@@ -644,56 +756,63 @@ abstract class Rule
      */
     protected function dispatch(Request $request, $route, array $option): Dispatch
     {
-        if (is_subclass_of($route, Dispatch::class)) {
-            $result = new $route($request, $this, $route, $this->vars);
+        if (isset($option['dispatcher']) && is_subclass_of($option['dispatcher'], Dispatch::class)) {
+            // 指定分组的调度处理对象
+            $result = new $option['dispatcher']($request, $this, $route, $this->vars, $option);
+        } elseif (is_subclass_of($route, Dispatch::class)) {
+            $result = new $route($request, $this, $route, $this->vars, $option);
         } elseif ($route instanceof Closure) {
             // 执行闭包
-            $result = new CallbackDispatch($request, $this, $route, $this->vars);
-        } elseif (false !== strpos($route, '@') || false !== strpos($route, '::') || false !== strpos($route, '\\')) {
+            $result = new CallbackDispatch($request, $this, $route, $this->vars, $option);
+        } elseif (is_array($route)) {
+            // 路由到类的方法
+            $result = $this->dispatchMethod($request, $route, $option);
+        } elseif (str_contains($route, '@') || str_contains($route, '::') || str_contains($route, '\\')) {
             // 路由到类的方法
             $route  = str_replace('::', '@', $route);
-            $result = $this->dispatchMethod($request, $route);
+            $result = $this->dispatchMethod($request, $route, $option);
         } else {
-            // 路由到控制器/操作
-            $result = $this->dispatchController($request, $route);
+            // 路由到模块/控制器/操作
+            $result = $this->dispatchController($request, $route, $option);
         }
 
         return $result;
     }
 
     /**
-     * 解析URL地址为 模块/控制器/操作
+     * 调度到类的方法
      * @access protected
      * @param  Request $request Request对象
-     * @param  string  $route 路由地址
+     * @param  string|array  $route 路由地址
      * @return CallbackDispatch
      */
-    protected function dispatchMethod(Request $request, string $route): CallbackDispatch
+    protected function dispatchMethod(Request $request, string | array $route, array $option = []): CallbackDispatch
     {
-        $path = $this->parseUrlPath($route);
+        if (is_string($route)) {
+            $path = $this->parseUrlPath($route);
 
-        $route  = str_replace('/', '@', implode('/', $path));
-        $method = strpos($route, '@') ? explode('@', $route) : $route;
+            $route  = str_replace('/', '@', implode('/', $path));
+            $method = str_contains($route, '@') ? explode('@', $route) : $route;
+        } else {
+            $method = $route;
+        }
 
-        return new CallbackDispatch($request, $this, $method, $this->vars);
+        return new CallbackDispatch($request, $this, $method, $this->vars, $option);
     }
 
     /**
-     * 解析URL地址为 模块/控制器/操作
+     * 调度到控制器方法 规则：模块/控制器/操作
      * @access protected
      * @param  Request $request Request对象
      * @param  string  $route 路由地址
      * @return ControllerDispatch
      */
-    protected function dispatchController(Request $request, string $route): ControllerDispatch
+    protected function dispatchController(Request $request, string $route, array $option = []): ControllerDispatch
     {
         $path = $this->parseUrlPath($route);
 
-        $action     = array_pop($path);
-        $controller = !empty($path) ? array_pop($path) : null;
-
         // 路由到模块/控制器/操作
-        return new ControllerDispatch($request, $this, [$controller, $action], $this->vars);
+        return new ControllerDispatch($request, $this, $path, $this->vars, $option);
     }
 
     /**
@@ -742,19 +861,28 @@ abstract class Rule
 
         // HTTPS检查
         if ((isset($option['https']) && $option['https'] && !$request->isSsl())
-            || (isset($option['https']) && !$option['https'] && $request->isSsl())) {
+            || (isset($option['https']) && !$option['https'] && $request->isSsl())
+        ) {
             return false;
         }
 
-        // 请求参数检查
+        // 请求参数过滤
         if (isset($option['filter'])) {
             foreach ($option['filter'] as $name => $value) {
-                if ($request->param($name, '', null) != $value) {
+                if ($request->param($name, '') != $value) {
                     return false;
                 }
             }
         }
 
+        // 检查Header信息
+        if (isset($option['header'])) {
+            foreach ($option['header'] as $name => $value) {
+                if ($request->header($name, '') != $value) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
@@ -768,7 +896,7 @@ abstract class Rule
     protected function parseUrlParams(string $url, array &$var = []): void
     {
         if ($url) {
-            preg_replace_callback('/(\w+)\|([^\|]+)/', function ($match) use (&$var) {
+            preg_replace_callback('/(\w+)\/([^\/]+)/', function ($match) use (&$var) {
                 $var[$match[1]] = strip_tags($match[2]);
             }, $url);
         }
@@ -786,8 +914,8 @@ abstract class Rule
         $url = str_replace('|', '/', $url);
         $url = trim($url, '/');
 
-        if (strpos($url, '/')) {
-            // [控制器/操作]
+        if (str_contains($url, '/')) {
+            // [模块/.../控制器/操作]
             $path = explode('/', $url);
         } else {
             $path = [$url];
@@ -821,7 +949,7 @@ abstract class Rule
         if ('/' != $rule) {
             if (!empty($option['remove_slash'])) {
                 $rule = rtrim($rule, '/');
-            } elseif (substr($rule, -1) == '/') {
+            } elseif (str_ends_with($rule, '/')) {
                 $rule     = rtrim($rule, '/');
                 $hasSlash = true;
             }
@@ -862,20 +990,24 @@ abstract class Rule
             return '';
         }
 
-        if (strpos($name, '?')) {
+        if (str_contains($name, '?')) {
             $name     = substr($name, 1, -2);
             $optional = '?';
-        } elseif (strpos($name, '>')) {
+        } elseif (str_contains($name, '>')) {
             $name = substr($name, 1, -1);
         }
 
         if (isset($pattern[$name])) {
             $nameRule = $pattern[$name];
-            if (0 === strpos($nameRule, '/') && '/' == substr($nameRule, -1)) {
+            if (isset($this->regex[$nameRule])) {
+                $nameRule = $this->regex[$nameRule];
+            }
+
+            if (str_starts_with($nameRule, '/') && str_ends_with($nameRule, '/')) {
                 $nameRule = substr($nameRule, 1, -1);
             }
         } else {
-            $nameRule = $this->router->config('default_route_pattern');
+            $nameRule = $this->config('default_route_pattern');
         }
 
         return '(' . $prefix . '(?<' . $name . $suffix . '>' . $nameRule . '))' . $optional;
@@ -898,13 +1030,29 @@ abstract class Rule
         return call_user_func_array([$this, 'setOption'], $args);
     }
 
-    public function __sleep()
+    public function __serialize(): array
     {
-        return ['name', 'rule', 'route', 'method', 'vars', 'option', 'pattern'];
+        return [
+            'name'    => $this->name,
+            'rule'    => $this->rule,
+            'route'   => $this->route,
+            'method'  => $this->method,
+            'vars'    => $this->vars,
+            'option'  => $this->option,
+            'pattern' => $this->pattern,
+        ];
     }
 
-    public function __wakeup()
+    public function __unserialize(array $data): void
     {
+        $this->name    = $data['name'];
+        $this->rule    = $data['rule'];
+        $this->route   = $data['route'];
+        $this->method  = $data['method'];
+        $this->vars    = $data['vars'];
+        $this->option  = $data['option'];
+        $this->pattern = $data['pattern'];
+        
         $this->router = Container::pull('route');
     }
 

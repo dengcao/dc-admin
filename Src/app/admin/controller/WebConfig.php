@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -17,20 +17,21 @@ use think\facade\View;
 class WebConfig
 {
     protected $middleware = [
-        'caozha_auth' => ['except' => ''],//验证是否管理员
+        'dengcao_auth' => ['except' => ''],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("config");//检测是否有权限
+        dc_auth("config");//检测是否有权限
     }
 
     public function index()
     {
         $web_config=WebConfigModel::where("id",">=",1)->limit(1)->findOrEmpty();
         if ($web_config->isEmpty()) {
-            caozha_error("系统设置的数据表不存在。","",1);
+            dengcao_error("系统设置的数据表不存在。","",1);
         }else{
-            $web_config_data=object_to_array($web_config->web_config);
+//            $web_config_data=object_to_array($web_config->web_config);
+            $web_config_data=object_to_array(json_decode($web_config->web_config));
             View::assign([
                 'web_config'  => $web_config_data
             ]);
@@ -46,7 +47,7 @@ class WebConfig
             return result_json(0, "error");
         }
         $edit_data = Request::param('', '', 'filter_sql');//过滤注入
-        $edit_data=array("web_config"=>$edit_data);
+        $edit_data=array("web_config"=>json_encode($edit_data));
 
         $update = WebConfigModel::where("id", ">=", 1)->limit(1)->findOrEmpty();
         if ($update->isEmpty()) { //数据不存在

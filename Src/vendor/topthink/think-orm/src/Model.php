@@ -1,8 +1,9 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -18,1074 +19,886 @@ use JsonSerializable;
 use think\contract\Arrayable;
 use think\contract\Jsonable;
 use think\db\BaseQuery as Query;
+use think\db\Express;
+use think\exception\ValidateException;
+use think\model\Collection;
+use think\model\contract\Modelable;
+use think\model\View;
+use WeakMap;
 
 /**
- * Class Model
- * @package think
- * @mixin Query
- * @method void onAfterRead(Model $model) static after_read事件定义
- * @method mixed onBeforeInsert(Model $model) static before_insert事件定义
- * @method void onAfterInsert(Model $model) static after_insert事件定义
- * @method mixed onBeforeUpdate(Model $model) static before_update事件定义
- * @method void onAfterUpdate(Model $model) static after_update事件定义
- * @method mixed onBeforeWrite(Model $model) static before_write事件定义
- * @method void onAfterWrite(Model $model) static after_write事件定义
- * @method mixed onBeforeDelete(Model $model) static before_write事件定义
- * @method void onAfterDelete(Model $model) static after_delete事件定义
- * @method void onBeforeRestore(Model $model) static before_restore事件定义
- * @method void onAfterRestore(Model $model) static after_restore事件定义
+ * Class Model.
+ * @mixin \think\db\Query
+ *
+ * @method static void  onAfterRead(Model $model)     after_read事件定义
+ * @method static mixed onBeforeInsert(Model $model)  before_insert事件定义
+ * @method static void  onAfterInsert(Model $model)   after_insert事件定义
+ * @method static mixed onBeforeUpdate(Model $model)  before_update事件定义
+ * @method static void  onAfterUpdate(Model $model)   after_update事件定义
+ * @method static mixed onBeforeWrite(Model $model)   before_write事件定义
+ * @method static void  onAfterWrite(Model $model)    after_write事件定义
+ * @method static mixed onBeforeDelete(Model $model)  before_write事件定义
+ * @method static void  onAfterDelete(Model $model)   after_delete事件定义
+ * @method static void  onBeforeRestore(Model $model) before_restore事件定义
+ * @method static void  onAfterRestore(Model $model)  after_restore事件定义
  */
-abstract class Model implements JsonSerializable, ArrayAccess, Arrayable, Jsonable
+abstract class Model implements JsonSerializable, ArrayAccess, Arrayable, Jsonable, Modelable
 {
     use model\concern\Attribute;
-    use model\concern\RelationShip;
-    use model\concern\ModelEvent;
-    use model\concern\TimeStamp;
+    use model\concern\AutoWriteData;
     use model\concern\Conversion;
+    use model\concern\DbConnect;
+    use model\concern\ModelEvent;
+    use model\concern\RelationShip;
+
+    private static ?WeakMap $weakMap = null;
 
     /**
-     * 数据是否存在
-     * @var bool
-     */
-    private $exists = false;
-
-    /**
-     * 是否强制更新所有数据
-     * @var bool
-     */
-    private $force = false;
-
-    /**
-     * 是否Replace
-     * @var bool
-     */
-    private $replace = false;
-
-    /**
-     * 数据表后缀
-     * @var string
-     */
-    protected $suffix;
-
-    /**
-     * 更新条件
-     * @var array
-     */
-    private $updateWhere;
-
-    /**
-     * 数据库配置
-     * @var string
-     */
-    protected $connection;
-
-    /**
-     * 模型名称
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * 主键值
-     * @var string
-     */
-    protected $key;
-
-    /**
-     * 数据表名称
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * 初始化过的模型.
-     * @var array
-     */
-    protected static $initialized = [];
-
-    /**
-     * 软删除字段默认值
-     * @var mixed
-     */
-    protected $defaultSoftDelete;
-
-    /**
-     * 全局查询范围
-     * @var array
-     */
-    protected $globalScope = [];
-
-    /**
-     * 延迟保存信息
-     * @var bool
-     */
-    private $lazySave = false;
-
-    /**
-     * 缓存自动更新标识
-     * @var bool|string
-     */
-    protected $cacheKey = false;
-
-    /**
-     * Db对象
-     * @var DbManager
-     */
-    protected static $db;
-
-    /**
-     * 容器对象的依赖注入方法
-     * @var callable
-     */
-    protected static $invoker;
-
-    /**
-     * 服务注入
+     * 服务注入.
+     *
      * @var Closure[]
      */
-    protected static $maker = [];
+    protected static array $_maker = [];
 
     /**
-     * 方法注入
-     * @var Closure[][]
+     * 设置服务注入.
      */
-    protected static $macro = [];
-
-    /**
-     * 设置服务注入
-     * @access public
-     * @param Closure $maker
-     * @return void
-     */
-    public static function maker(Closure $maker)
+    public static function maker(Closure $maker): void
     {
-        static::$maker[] = $maker;
+        static::$_maker[] = $maker;
     }
 
     /**
-     * 设置方法注入
-     * @access public
-     * @param string $method
-     * @param Closure $closure
-     * @return void
-     */
-    public static function macro(string $method, Closure $closure)
-    {
-        if (!isset(static::$macro[static::class])) {
-            static::$macro[static::class] = [];
-        }
-        static::$macro[static::class][$method] = $closure;
-    }
-
-    /**
-     * 设置Db对象
-     * @access public
-     * @param DbManager $db Db对象
-     * @return void
-     */
-    public static function setDb(DbManager $db)
-    {
-        self::$db = $db;
-    }
-
-    /**
-     * 设置容器对象的依赖注入方法
-     * @access public
+     * 设置容器对象的依赖注入方法.（用于兼容）
+     *
      * @param callable $callable 依赖注入方法
+     *
      * @return void
      */
     public static function setInvoker(callable $callable): void
     {
-        self::$invoker = $callable;
     }
 
     /**
-     * 调用反射执行模型方法 支持参数绑定
-     * @access public
+     * 调用反射执行模型方法 支持参数绑定.
+     *
      * @param mixed $method
-     * @param array $vars 参数
+     * @param array $vars   参数
+     *
      * @return mixed
      */
     public function invoke($method, array $vars = [])
     {
-        if (self::$invoker) {
-            $call = self::$invoker;
-            return $call($method instanceof Closure ? $method : Closure::fromCallable([$this, $method]), $vars);
+        if (is_string($method)) {
+            $method = [$this, $method];
         }
 
-        return call_user_func_array($method instanceof Closure ? $method : [$this, $method], $vars);
+        $invoker = $this->getOption('invoker');
+        if ($invoker) {
+            return $invoker($method instanceof Closure ? $method : Closure::fromCallable($method), $vars);
+        }
+
+        return call_user_func_array($method, $vars);
     }
 
     /**
-     * 架构函数
-     * @access public
-     * @param array $data 数据
+     * 架构函数.
+     *
+     * @param array|object $data 实体模型数据
      */
-    public function __construct(array $data = [])
+    public function __construct(array | object $data = [])
     {
-        $this->data = $data;
+        // 获取实体模型参数
+        $options = array_merge($this->getBaseOptions(), $this->getOptions());
 
-        if (!empty($this->data)) {
-            // 废弃字段
-            foreach ((array) $this->disuse as $key) {
-                if (array_key_exists($key, $this->data)) {
-                    unset($this->data[$key]);
-                }
-            }
+        if (!self::$weakMap) {
+            self::$weakMap = new WeakMap;
         }
 
-        // 记录原始数据
-        $this->origin = $this->data;
+        self::$weakMap[$this] = [
+            'get'          => [],
+            'data'         => [],
+            'origin'       => [],
+            'relation'     => [],
+            'together'     => [],
+            'allow'        => [],
+            'withAttr'     => [],
+            'schema'       => $options['schema'] ?? [],
+            'updateTime'   => $options['updateTime'] ?? 'update_time',
+            'createTime'   => $options['createTime'] ?? 'create_time',
+            'suffix'       => $options['suffix'] ?? '',
+            'validate'     => $options['validate'] ?? $this->parseValidate(),
+            'type'         => $options['type'] ?? [],
+            'readonly'     => $options['readonly'] ?? [],
+            'disuse'       => $options['disuse'] ?? [],
+            'hidden'       => $options['hidden'] ?? [],
+            'visible'      => $options['visible'] ?? [],
+            'append'       => $options['append'] ?? [],
+            'mapping'      => $options['mapping'] ?? [],
+            'strict'       => $options['strict'] ?? true,
+            'bindAttr'     => $options['bindAttr'] ?? [],
+            'autoRelation' => $options['autoRelation'] ?? [],
+        ];
 
-        if (empty($this->name)) {
-            // 当前模型名
-            $name       = str_replace('\\', '/', static::class);
-            $this->name = basename($name);
-        }
+        // 设置额外参数
+        $this->setOptions(array_diff_key($options, self::$weakMap[$this]));
 
-        if (!empty(static::$maker)) {
-            foreach (static::$maker as $maker) {
+        // 模型初始化
+        $this->initialize();
+
+        // 初始化数据
+        $this->initializeData($data);        
+    }
+
+    protected function initialize()
+    {
+        if (!empty(static::$_maker)) {
+            foreach (static::$_maker as $maker) {
                 call_user_func($maker, $this);
             }
         }
 
-        // 执行初始化操作
-        $this->initialize();
+        // 初始化模型
+        $this->init();
     }
 
     /**
-     * 获取当前模型名称
-     * @access public
-     * @return string
+     *  初始化模型.
+     *
+     * @return void
      */
-    public function getName(): string
+    protected function init()
+    {}
+
+    /**
+     * 定义基础配置参数.
+     *
+     * @return array
+     */
+    protected function getBaseOptions(): array
     {
-        return $this->name;
+        return [];
     }
 
     /**
-     * 创建新的模型实例
-     * @access public
-     * @param array $data       数据
-     * @param mixed $where      更新条件
-     * @param array $options    参数
-     * @return Model
+     * 在实体模型中定义 返回相关配置参数.
+     *
+     * @return array
      */
-    public function newInstance(array $data = [], $where = null, array $options = []): Model
+    protected function getOptions(): array
+    {
+        return [];
+    }
+
+    /**
+     * 批量设置模型参数
+     * @param array  $options  值
+     * @return void
+     */
+    public function setOptions(array $options): void
+    {
+        foreach ($options as $name => $value) {
+            $this->setOption($name, $value);
+        }
+    }
+
+    /**
+     * 设置模型参数
+     *
+     * @param string $name  参数名
+     * @param mixed  $value  值
+     *
+     * @return $this
+     */
+    public function setOption(string $name, $value)
+    {
+        self::$weakMap[$this][$name] = $value;
+        if (property_exists($this, $name)) {
+            $this->$name = $value;
+        }
+        return $this;
+    }
+
+    /**
+     * 获取模型参数
+     *
+     * @param string $name  参数名
+     * @param mixed  $default  默认值
+     *
+     * @return mixed
+     */
+    public function getOption(string $name, $default = null)
+    {
+        // 兼容读取3.0版本的属性参数定义
+        if (property_exists($this, $name) && isset($this->$name)) {
+            return $this->$name;
+        } 
+        return self::$weakMap[$this][$name] ?? $default;
+    }
+
+    private function setWeakData(string $key, string $name, $value): void
+    {
+        self::$weakMap[$this][$key][$name] = $value;
+    }
+
+    private function getWeakData(string $key, string $name, $default = null)
+    {
+        return self::$weakMap[$this][$key][$name] ?? $default;
+    }
+
+    /**
+     * 创建新的模型实例.
+     *
+     * @param array|object $data
+     * @param array $options
+     *
+     * @return Model|Entity
+     */
+    public function newInstance(array | object $data = [], array $options = [])
     {
         $model = new static($data);
-
-        if ($this->connection) {
-            $model->setConnection($this->connection);
+        if (!empty($data)) {
+            $model->exists(true);
         }
 
-        if ($this->suffix) {
-            $model->setSuffix($this->suffix);
+        if ($this->getEntity()) {
+            // 存在对应实体模型实例
+            return $this->getEntity()->newInstance($model, $options);
         }
 
-        if (empty($data)) {
-            return $model;
-        }
+        return $this->fetchModel($model, $options);
+    }
 
-        $model->exists(true);
-
-        $model->setUpdateWhere($where);
-
-        $model->trigger('AfterRead');
-
+    /**
+     * 获取克隆的模型实例.
+     *
+     * @return static
+     */
+    public function clone()
+    {
+        $model = new static();
+        self::$weakMap[$model] = self::$weakMap[$this];
         return $model;
     }
 
     /**
-     * 设置模型的更新条件
-     * @access protected
-     * @param mixed $where 更新条件
-     * @return void
+     * 获取实际模型实例.
+     *
+     * @param Model $model
+     *
+     * @return Modelable
      */
-    protected function setUpdateWhere($where): void
+    protected function fetchModel(Model $model, array $options = []): Modelable
     {
-        $this->updateWhere = $where;
+        $class = $model->getOption('entityClass', str_replace('\\model\\', '\\entity\\', static::class));
+        if (class_exists($class) && is_subclass_of($class, Entity::class)) {
+            return new $class($model, $options);
+        }
+        return $model;
+    }
+
+    public function entity(Entity $entity): void
+    {
+        $this->setOption('entity', $entity);
+    }
+
+    public function getEntity(): ?Entity
+    {
+        return $this->getOption('entity');
     }
 
     /**
-     * 设置当前模型的数据库连接
-     * @access public
-     * @param string $connection 数据表连接标识
-     * @return $this
-     */
-    public function setConnection(string $connection)
-    {
-        $this->connection = $connection;
-        return $this;
-    }
-
-    /**
-     * 获取当前模型的数据库连接标识
-     * @access public
+     * 解析对应验证类.
+     *
      * @return string
      */
-    public function getConnection(): string
+    protected function parseValidate(): string
     {
-        return $this->connection ?: '';
+        $auto     = $this->getOption('autoValidate', false);
+        $validate = $auto && str_contains(static::class, '\\model\\') ? str_replace('\\model\\', '\\validate\\', static::class) : '';
+        return $validate && class_exists($validate) ? $validate : '';
     }
 
     /**
-     * 设置当前模型数据表的后缀
-     * @access public
-     * @param string $suffix 数据表后缀
+     * 设置验证场景. 
+     *
+     * @param string|array $scene 场景名或数组
      * @return $this
      */
-    public function setSuffix(string $suffix)
+    public function scene(string|array $scene)
     {
-        $this->suffix = $suffix;
-        return $this;
+        return $this->setOption('scene', $scene);
     }
 
     /**
-     * 设置当前查询的自动缓存标识
-     * @access public
-     * @param string|bool $key 缓存标识
-     * @return $this
-     */
-    public function setCacheKey($key)
-    {
-        $this->cacheKey = $key;
-        return $this;
-    }
-
-    /**
-     * 获取当前模型的数据表后缀
-     * @access public
-     * @return string
-     */
-    public function getSuffix(): string
-    {
-        return $this->suffix ?: '';
-    }
-
-    /**
-     * 获取当前模型的数据库查询对象
-     * @access public
-     * @param array $scope 设置不使用的全局查询范围
-     * @return Query
-     */
-    public function db($scope = []): Query
-    {
-        /** @var Query $query */
-        $query = self::$db->connect($this->connection)
-            ->name($this->name . $this->suffix)
-            ->pk($this->pk);
-
-        if (!empty($this->table)) {
-            $query->table($this->table . $this->suffix);
-        }
-
-        $query->model($this)
-            ->json($this->json, $this->jsonAssoc)
-            ->setFieldType(array_merge($this->schema, $this->jsonType));
-
-        // 软删除
-        if (property_exists($this, 'withTrashed') && !$this->withTrashed) {
-            $this->withNoTrashed($query);
-        }
-
-        // 全局作用域
-        if (is_array($scope)) {
-            $globalScope = array_diff($this->globalScope, $scope);
-            $query->scope($globalScope);
-        }
-
-        // 返回当前模型的数据库查询对象
-        return $query;
-    }
-
-    /**
-     *  初始化模型
-     * @access private
+     * 验证模型数据.
+     *
+     * @param array $data 数据
+     * @param array $allow 需要验证的字段
+     *
+     * @throws ValidateException
      * @return void
      */
-    private function initialize(): void
+    protected function validate(array $data, array $allow = []): void
     {
-        if (!isset(static::$initialized[static::class])) {
-            static::$initialized[static::class] = true;
-            static::init();
+        $validater = $this->getOption('validate');
+        if (!empty($validater)) {
+            validate($validater)
+                ->scene($this->getOption('scene') ?: $allow)
+                ->check($data);
         }
     }
 
     /**
-     * 初始化处理
-     * @access protected
-     * @return void
-     */
-    protected static function init()
-    {
-    }
-
-    protected function checkData(): void
-    {
-    }
-
-    protected function checkResult($result): void
-    {
-    }
-
-    /**
-     * 更新是否强制写入数据 而不做比较（亦可用于软删除的强制删除）
-     * @access public
-     * @param bool $force
-     * @return $this
-     */
-    public function force(bool $force = true)
-    {
-        $this->force = $force;
-        return $this;
-    }
-
-    /**
-     * 判断force
-     * @access public
+     * 保存模型实例数据.
+     *
+     * @param array|object $data 数据
+     * @param mixed $where 更新条件 true为强制新增
+     * @param bool  $refresh  是否刷新数据
      * @return bool
      */
-    public function isForce(): bool
+    public function save(array | object $data = [], $where = [], bool $refresh = false): bool
     {
-        return $this->force;
-    }
-
-    /**
-     * 新增数据是否使用Replace
-     * @access public
-     * @param bool $replace
-     * @return $this
-     */
-    public function replace(bool $replace = true)
-    {
-        $this->replace = $replace;
-        return $this;
-    }
-
-    /**
-     * 刷新模型数据
-     * @access public
-     * @param bool $relation 是否刷新关联数据
-     * @return $this
-     */
-    public function refresh(bool $relation = false)
-    {
-        if ($this->exists) {
-            $this->data   = $this->db()->find($this->getKey())->getData();
-            $this->origin = $this->data;
-            $this->get    = [];
-
-            if ($relation) {
-                $this->relation = [];
-            }
+        if (!empty($data)) {
+            // 初始化模型数据
+            $this->initializeData($data, true);
         }
 
-        return $this;
-    }
+        if (false === $this->trigger('BeforeWrite')) {
+            return false;
+        }
 
-    /**
-     * 设置数据是否存在
-     * @access public
-     * @param bool $exists
-     * @return $this
-     */
-    public function exists(bool $exists = true)
-    {
-        $this->exists = $exists;
-        return $this;
-    }
-
-    /**
-     * 判断数据是否存在数据库
-     * @access public
-     * @return bool
-     */
-    public function isExists(): bool
-    {
-        return $this->exists;
-    }
-
-    /**
-     * 判断模型是否为空
-     * @access public
-     * @return bool
-     */
-    public function isEmpty(): bool
-    {
-        return empty($this->data);
-    }
-
-    /**
-     * 延迟保存当前数据对象
-     * @access public
-     * @param array|bool $data 数据
-     * @return void
-     */
-    public function lazySave($data = []): void
-    {
-        if (false === $data) {
-            $this->lazySave = false;
+        if (true === $where) {
+            $isUpdate = false;
+            $where    = [];
+        } elseif (!empty($where)) {
+            $isUpdate = true;
         } else {
-            if (is_array($data)) {
-                $this->setAttrs($data);
-            }
-
-            $this->lazySave = true;
+            $isUpdate = $this->isExists() ? true : false;
         }
-    }
 
-    /**
-     * 保存当前数据对象
-     * @access public
-     * @param array  $data     数据
-     * @param string $sequence 自增序列名
-     * @return bool
-     */
-    public function save(array $data = [], string $sequence = null): bool
-    {
-        // 数据对象赋值
-        $this->setAttrs($data);
-
-        if ($this->isEmpty() || false === $this->trigger('BeforeWrite')) {
+        if (false === $this->trigger($isUpdate ? 'BeforeUpdate' : 'BeforeInsert')) {
             return false;
         }
 
-        $result = $this->exists ? $this->updateData() : $this->insertData($sequence);
-
-        if (false === $result) {
-            return false;
-        }
-
-        // 写入回调
-        $this->trigger('AfterWrite');
-
-        // 重新记录原始数据
-        $this->origin   = $this->data;
-        $this->get      = [];
-        $this->lazySave = false;
-
-        return true;
-    }
-
-    /**
-     * 检查数据是否允许写入
-     * @access protected
-     * @return array
-     */
-    protected function checkAllowFields(): array
-    {
-        // 检测字段
-        if (empty($this->field)) {
-            if (!empty($this->schema)) {
-                $this->field = array_keys(array_merge($this->schema, $this->jsonType));
-            } else {
-                $query = $this->db();
-                $table = $this->table ? $this->table . $this->suffix : $query->getTable();
-
-                $this->field = $query->getConnection()->getTableFields($table);
-            }
-
-            return $this->field;
-        }
-
-        $field = $this->field;
-
-        if ($this->autoWriteTimestamp) {
-            array_push($field, $this->createTime, $this->updateTime);
-        }
-
-        if (!empty($this->disuse)) {
-            // 废弃字段
-            $field = array_diff($field, $this->disuse);
-        }
-
-        return $field;
-    }
-
-    /**
-     * 保存写入数据
-     * @access protected
-     * @return bool
-     */
-    protected function updateData(): bool
-    {
-        // 事件回调
-        if (false === $this->trigger('BeforeUpdate')) {
-            return false;
-        }
-
-        $this->checkData();
-
-        // 获取有更新的数据
-        $data = $this->getChangedData();
+        [$data, $relations, $allow] = $this->validateAndFilterData($isUpdate);
 
         if (empty($data)) {
-            // 关联更新
-            if (!empty($this->relationWrite)) {
-                $this->autoRelationUpdate();
+            // 保存关联数据
+            if ($isUpdate && $this->getOption('together')) {
+                $this->relationSave($relations, $isUpdate);
             }
-
             return true;
         }
 
-        if ($this->autoWriteTimestamp && $this->updateTime) {
-            // 自动写入更新时间
-            $data[$this->updateTime]       = $this->autoWriteTimestamp();
-            $this->data[$this->updateTime] = $data[$this->updateTime];
+        // 自动写入数据
+        $this->autoWriteData($data, $isUpdate, $allow);
+
+        $db     = $this->getDbWhere($where);
+        $result = $db->field($allow)
+            ->removeOption('data')
+            ->save($data, !$isUpdate);
+
+        if (!$isUpdate) {
+            $this->exists(true);
+            // 写入自增键值
+            $key = $db->getAutoInc();
+            $val = $db->getLastInsID();
+            if ($key && $val) {
+                $this->setData($key, $val);
+            }
+        } elseif ($refresh) {
+            // 刷新数据
+            $this->refresh();
+        }
+        $this->trigger($isUpdate ? 'AfterUpdate' : 'AfterInsert');
+        $this->trigger('AfterWrite');
+
+        // 保存关联数据
+        if ($this->getOption('together')) {
+            $this->relationSave($relations, $isUpdate);
         }
 
-        // 检查允许字段
-        $allowFields = $this->checkAllowFields();
-
-        foreach ($this->relationWrite as $name => $val) {
-            if (!is_array($val)) {
-                continue;
-            }
-
-            foreach ($val as $key) {
-                if (isset($data[$key])) {
-                    unset($data[$key]);
-                }
-            }
-        }
-
-        // 模型更新
-        $db = $this->db();
-
-        $db->transaction(function () use ($data, $allowFields, $db) {
-            $this->key = null;
-            $where     = $this->getWhere();
-
-            $result = $db->where($where)
-                ->strict(false)
-                ->cache($this->cacheKey)
-                ->setOption('key', $this->key)
-                ->field($allowFields)
-                ->update($data);
-
-            $this->checkResult($result);
-
-            // 关联更新
-            if (!empty($this->relationWrite)) {
-                $this->autoRelationUpdate();
-            }
-        });
-
-        // 更新回调
-        $this->trigger('AfterUpdate');
-
+        // 重置原始数据
+        $this->refreshOrigin();
         return true;
     }
 
     /**
-     * 新增写入数据
-     * @access protected
-     * @param string $sequence 自增名
+     * 验证和过滤数据
+     * @param bool $isUpdate 是否更新
+     * @return array [$data, $relations, $allow]
+     */
+    protected function validateAndFilterData(bool $isUpdate): array
+    {
+        $data     = $this->getData();
+        $origin   = $this->getOrigin();
+        $allow    = $this->getOption('allow') ?: array_keys($this->getFields());
+        $readonly = $this->getOption('readonly');
+        $disuse   = $this->getOption('disuse');
+        $allow    = array_diff($allow, $disuse, $isUpdate ? $readonly : []);
+        $together = $this->getOption('together');
+
+        // 验证数据
+        $this->validate($data, $allow);
+
+        $relations = [];
+        foreach ($data as $name => &$val) {
+            if ($val instanceof Modelable || in_array($name, $together)) {
+                $relations[$name] = $val;
+                unset($data[$name]);
+            } elseif ($val instanceof Collection || (!empty($allow) && !in_array($name, $allow))) {
+                unset($data[$name]);
+            } elseif ($isUpdate && !$this->isForce() && $this->isNotRequireUpdate($name, $val, $origin)) {
+                unset($data[$name]);
+            } else {
+                $val = $this->setAttrOfWith($name, $val);
+            }
+        }
+
+        return [$data, $relations, $allow];
+    }
+
+    /**
+     * 数据检查.
+     * @param array $data 数据
+     * @param bool  $isUpdate 是否更新
+     * @return void
+     */
+    protected function checkData(array &$data, bool $isUpdate): void
+    {
+    }
+
+    protected function getDbWhere($where = [])
+    {
+        $db = $this->db();
+        // 检查条件
+        if (!empty($where)) {
+            $db->where($where);
+        } elseif ($this->getKey()) {
+            $db->setKey($this->getKey());
+        } else {
+            $db->where($this->getOrigin());
+        }
+
+        if ($this->isForce()) {
+            $db->removeOption('soft_delete');
+        }
+
+        return $db;
+    }
+
+    /**
+     * 检查字段是否有更新（主键无需更新）.
+     *
+     * @param string $name 字段
+     * @param mixed $val 值
+     * @param array $origin 原始数据
      * @return bool
      */
-    protected function insertData(string $sequence = null): bool
+    protected function isNotRequireUpdate(string $name, $val, array $origin): bool
     {
-        if (false === $this->trigger('BeforeInsert')) {
-            return false;
-        }
-
-        $this->checkData();
-        $data = $this->data;
-
-        // 时间戳自动写入
-        if ($this->autoWriteTimestamp) {
-            if ($this->createTime && !isset($data[$this->createTime])) {
-                $data[$this->createTime]       = $this->autoWriteTimestamp();
-                $this->data[$this->createTime] = $data[$this->createTime];
-            }
-
-            if ($this->updateTime && !isset($data[$this->updateTime])) {
-                $data[$this->updateTime]       = $this->autoWriteTimestamp();
-                $this->data[$this->updateTime] = $data[$this->updateTime];
-            }
-        }
-
-        // 检查允许字段
-        $allowFields = $this->checkAllowFields();
-
-        $db = $this->db();
-
-        $db->transaction(function () use ($data, $sequence, $allowFields, $db) {
-            $result = $db->strict(false)
-                ->field($allowFields)
-                ->replace($this->replace)
-                ->sequence($sequence)
-                ->insert($data, true);
-
-            // 获取自动增长主键
-            if ($result) {
-                $pk = $this->getPk();
-
-                if (is_string($pk) && (!isset($this->data[$pk]) || '' == $this->data[$pk])) {
-                    unset($this->get[$pk]);
-                    $this->data[$pk] = $result;
-                }
-            }
-
-            // 关联写入
-            if (!empty($this->relationWrite)) {
-                $this->autoRelationInsert();
-            }
-        });
-
-        // 标记数据已经存在
-        $this->exists = true;
-        $this->origin = $this->data;
-
-        // 新增回调
-        $this->trigger('AfterInsert');
-
-        return true;
+        return (array_key_exists($name, $origin) && $val === $origin[$name]) || $this->getPk() == $name;
     }
 
     /**
-     * 获取当前的更新条件
-     * @access public
-     * @return mixed
+     * 获取更新数据.
+     *
+     * @return array
      */
-    public function getWhere()
+    public function getChangedData(): array
     {
-        $pk = $this->getPk();
-
-        if (is_string($pk) && isset($this->origin[$pk])) {
-            $where     = [[$pk, '=', $this->origin[$pk]]];
-            $this->key = $this->origin[$pk];
-        } elseif (is_array($pk)) {
-            foreach ($pk as $field) {
-                if (isset($this->origin[$field])) {
-                    $where[] = [$field, '=', $this->origin[$field]];
-                }
+        $data   = $this->getData();
+        $origin = $this->getOrigin();
+        $change = [];
+        foreach ($data as $name => $val) {
+            if (!array_key_exists($name, $origin) || $val !== $origin[$name]) {
+                $change[$name] = $val;
             }
         }
+        return $change;
+    }
 
-        if (empty($where)) {
-            $where = empty($this->updateWhere) ? null : $this->updateWhere;
+    /**
+     * 判断数据是否有更新.
+     *
+     * @param string $name 字段
+     * @return bool
+     */
+    public function isChange(string $name): bool
+    {
+        return $this->getData($name) !== $this->getOrigin($name);
+    }
+
+    /**
+     * 刷新模型数据.
+     *
+     * @return static
+     */
+    public function refresh()
+    {
+        if ($this->isExists() && $this->getKey()) {
+            $data = $this->db()->find($this->getKey())->getData();
+            $this->data($data);
         }
-
-        return $where;
+        return $this;
     }
 
     /**
      * 保存多个数据到当前数据对象
-     * @access public
+     *
      * @param iterable $dataSet 数据
-     * @param boolean  $replace 是否自动识别更新和写入
+     * @param bool     $replace 是否replace
+     *
      * @return Collection
-     * @throws \Exception
      */
-    public function saveAll(iterable $dataSet, bool $replace = true): Collection
+    public static function saveAll(iterable $dataSet, bool $replace = true): Collection
     {
-        $db = $this->db();
-
-        $result = $db->transaction(function () use ($replace, $dataSet) {
-
-            $pk = $this->getPk();
-
-            $result = [];
-            $suffix = $this->getSuffix();
-
-            foreach ($dataSet as $key => $data) {
-                if ($replace) {
-                    $exists = true;
-                    foreach ((array) $pk as $field) {
-                        if (!isset($data[$field])) {
-                            $exists = false;
-                        }
+        $result = [];
+        $model  = new static;
+        $pk     = $model->getPk();
+        foreach ($dataSet as $key => $data) {
+            $model  = new static;
+            if ($replace) {
+                $exists = true;
+                foreach ((array) $pk as $field) {
+                    if (is_string($field) && !isset($data[$field])) {
+                        $exists = false;
                     }
                 }
-
-                if ($replace && !empty($exists)) {
-                    $result[$key] = static::update($data, [], [], $suffix);
-                } else {
-                    $result[$key] = static::create($data, $this->field, $this->replace, $suffix);
-                }
+            } else {
+                $exists = false;
             }
 
-            return $result;
-        });
-
-        return $this->toCollection($result);
+            $model->replace($replace)->exists($exists)->save($data);
+            $result[$key] = $model->fetchModel($model);
+        }
+        return $model->toCollection($result);
     }
 
     /**
-     * 删除当前的记录
-     * @access public
+     * 删除模型数据.
+     *
      * @return bool
      */
     public function delete(): bool
     {
-        if (!$this->exists || $this->isEmpty() || false === $this->trigger('BeforeDelete')) {
+        if ($this->isEmpty() || false === $this->trigger('BeforeDelete')) {
             return false;
         }
 
-        // 读取更新条件
-        $where = $this->getWhere();
-
-        $db = $this->db();
-
-        $db->transaction(function () use ($where, $db) {
-            // 删除当前模型数据
-            $db->where($where)->cache($this->cacheKey)->delete();
-
-            // 关联删除
-            if (!empty($this->relationWrite)) {
-                $this->autoRelationDelete();
+        foreach ($this->getData() as $name => $val) {
+            if ($val instanceof Model || $val instanceof Collection) {
+                $relations[$name] = $val;
             }
-        });
+        }
+
+        $result = $this->getDbWhere()->delete();
 
         $this->trigger('AfterDelete');
 
-        $this->exists   = false;
-        $this->lazySave = false;
+        if ($result && !empty($relations)) {
+            // 删除关联数据
+            $this->relationDelete($relations);
+        }
 
+        $this->exists(false);
+        $this->clear();
         return true;
     }
 
     /**
-     * 写入数据
-     * @access public
-     * @param array  $data       数据数组
-     * @param array  $allowField 允许字段
-     * @param bool   $replace    使用Replace
-     * @param string $suffix     数据表后缀
-     * @return static
+     * 写入数据.
+     *
+     * @param array|object  $data 数据
+     * @param array  $allowField  允许字段
+     * @param bool   $replace     使用Replace
+     * @param string $suffix      数据表后缀
+     * @return Modelable
      */
-    public static function create(array $data, array $allowField = [], bool $replace = false, string $suffix = ''): Model
+    public static function create(array | object $data, array $allowField = [], bool $replace = false, string $suffix = ''): Modelable
     {
         $model = new static();
-
-        if (!empty($allowField)) {
-            $model->allowField($allowField);
-        }
-
         if (!empty($suffix)) {
             $model->setSuffix($suffix);
         }
-
-        $model->replace($replace)->save($data);
-
-        return $model;
+        $model->allowField($allowField)->replace($replace)->save($data, true);            
+        return $model->fetchModel($model);
     }
 
     /**
-     * 更新数据
-     * @access public
-     * @param array  $data       数据数组
-     * @param mixed  $where      更新条件
-     * @param array  $allowField 允许字段
-     * @param string $suffix     数据表后缀
-     * @return static
+     * 更新数据.
+     *
+     * @param array|object  $data 数据
+     * @param mixed  $where       更新条件
+     * @param array  $allowField  允许字段
+     * @param string $suffix      数据表后缀
+     * @param bool   $refresh     是否刷新数据
+     * @return Modelable
      */
-    public static function update(array $data, $where = [], array $allowField = [], string $suffix = '')
+    public static function update(array | object $data, $where = [], array $allowField = [], string $suffix = '', bool $refresh = false): Modelable
     {
-        $model = new static();
-
-        if (!empty($allowField)) {
-            $model->allowField($allowField);
-        }
-
-        if (!empty($where)) {
-            $model->setUpdateWhere($where);
-        }
-
+        $model  = new static();
         if (!empty($suffix)) {
             $model->setSuffix($suffix);
         }
-
-        $model->exists(true)->save($data);
-
-        return $model;
+        $model->allowField($allowField)->exists(true)->save($data, $where, $refresh);
+        return $model->fetchModel($model);
     }
 
     /**
-     * 删除记录
-     * @access public
+     * 删除记录.
+     *
      * @param mixed $data  主键列表 支持闭包查询条件
      * @param bool  $force 是否强制删除
+     * @param array $together 关联删除
+     *
      * @return bool
      */
-    public static function destroy($data, bool $force = false): bool
+    public static function destroy($data, bool $force = false, array $together = []): bool
     {
         if (empty($data) && 0 !== $data) {
             return false;
-        }
-
-        $model = new static();
-
-        $query = $model->db();
+        }        
+        $db = (new static())->db();
 
         if (is_array($data) && key($data) !== 0) {
-            $query->where($data);
-            $data = null;
-        } elseif ($data instanceof \Closure) {
-            $data($query);
-            $data = null;
+            $db->where($data);
+            $data = [];
+        } elseif ($data instanceof Closure) {
+            $data($db);
+            $data = [];
         }
 
-        $resultSet = $query->select($data);
+        $resultSet = $db->select((array) $data);
 
         foreach ($resultSet as $result) {
-            $result->force($force)->delete();
+            $result->force($force)->together($together)->delete();
         }
-
         return true;
     }
 
     /**
-     * 解序列化后处理
+     * 字段值增长
+     *
+     * @param string    $field    字段名
+     * @param float|int $step     增长值
+     * @param int       $lazyTime 延迟时间（秒）
+     *
+     * @return $this
      */
-    public function __wakeup()
+    public function inc(string $field, float|int $step = 1, int $lazyTime = 0)
     {
-        $this->initialize();
+        return $this->set($field, new Express('+', $step, $lazyTime));
     }
 
     /**
-     * 修改器 设置数据对象的值
-     * @access public
-     * @param string $name  名称
-     * @param mixed  $value 值
-     * @return void
+     * 字段值减少.
+     *
+     * @param string    $field    字段名
+     * @param float|int $step     增长值
+     * @param int       $lazyTime 延迟时间（秒）
+     *
+     * @return $this
      */
-    public function __set(string $name, $value): void
+    public function dec(string $field, float|int $step = 1, int $lazyTime = 0)
     {
-        $this->setAttr($name, $value);
+        return $this->set($field, new Express('-', $step, $lazyTime));
     }
 
     /**
-     * 获取器 获取数据对象的值
-     * @access public
+     * 查询缓存 数据为空不缓存.
+     *
+     * @param mixed         $key    缓存key
+     * @param int|\DateTime $expire 缓存有效期
+     * @param string|array  $tag    缓存标签
+     *
+     * @return $this
+     */
+    public function setCache($key = true, $expire = null, $tag = null)
+    {
+        return $this->setOption('cache', [$key, $expire, $tag]);
+    }
+
+    /**
+     * 允许写入字段.
+     *
+     * @param array $allow 允许字段
+     *
+     * @return $this
+     */
+    public function allowField(array $allow)
+    {
+        return $this->setOption('allow', $allow);
+    }
+
+    /**
+     * 动态设置只读字段.
+     *
+     * @param array $fields 只读字段
+     *
+     * @return $this
+     */
+    public function readonly(array $fields)
+    {
+        return $this->setOption('readonly', $fields);
+    }
+
+    /**
+     * 强制写入或删除
+     *
+     * @param bool $force 强制更新
+     *
+     * @return $this
+     */
+    public function force(bool $force = true)
+    {
+        return $this->setOption('force', $force);
+    }
+
+    /**
+     * 判断数据是否强制写入或删除.
+     *
+     * @return bool
+     */
+    public function isForce(): bool
+    {
+        return $this->getOption('force', false);
+    }
+
+    /**
+     * 获取属性 支持获取器
+     *
      * @param string $name 名称
+     *
      * @return mixed
      */
     public function __get(string $name)
     {
-        return $this->getAttr($name);
+        return $this->get($name);
+    }
+
+    /**
+     * 设置数据 支持类型自动转换
+     *
+     * @param string $name  名称
+     * @param mixed  $value 值
+     *
+     * @return void
+     */
+    public function __set(string $name, $value): void
+    {
+        if ($value instanceof Modelable && $bind = $this->getAttrOfBind($this->getOption('bindAttr'), $name)) {
+            // 关联属性绑定
+            $this->bindRelationAttr($value, $bind);
+        } else {
+            $this->set($name, $value);
+        }
     }
 
     /**
      * 检测数据对象的值
-     * @access public
+     *
      * @param string $name 名称
+     *
      * @return bool
      */
     public function __isset(string $name): bool
     {
-        return !is_null($this->getAttr($name));
+        return !is_null($this->get($name));
     }
 
     /**
      * 销毁数据对象的值
-     * @access public
+     *
      * @param string $name 名称
+     *
      * @return void
      */
     public function __unset(string $name): void
     {
-        unset($this->data[$name],
-            $this->get[$name],
-            $this->relation[$name]);
+        $name = $this->getRealFieldName($name);
+
+        $this->setWeakData('data', $name, null);
+        $this->setWeakData('get', $name, null);
+    }
+
+    public function __toString()
+    {
+        return $this->toJson();
+    }
+
+    public function __debugInfo()
+    {
+        return [
+            'data'   => $this->getOption('data'),
+            'origin' => $this->getOption('origin'),
+            'schema' => $this->getOption('schema'),
+        ];
+    }
+
+    // JsonSerializable
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * 序列化模型对象
+     * 
+     * @return array
+     */
+    public function __serialize(): array
+    {
+        $removeKeys = ['invoker', 'db', 'event'];
+        return array_diff_key(self::$weakMap[$this], array_flip($removeKeys));
+    }
+
+    /**
+     * 反序列化模型对象
+     * 
+     * @param array $data 
+     * @return void
+     */
+    public function __unserialize(array $data) 
+    {
+        if (!self::$weakMap) {
+            self::$weakMap = new WeakMap;
+        }
+
+        self::$weakMap[$this] = $data;
+        // 重新初始化
+        $this->initialize();
+    }
+
+    /**
+     * 克隆模型实例
+     * 
+     * @return void
+     */
+    public function __clone()
+    {
+        throw new InvalidArgumentException('use $modelObj->clone() replace clone $modelObj');
     }
 
     // ArrayAccess
-    #[\ReturnTypeWillChange]
-    public function offsetSet($name, $value)
+    public function offsetSet(mixed $name, mixed $value): void
     {
-        $this->setAttr($name, $value);
+        $this->set($name, $value);
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetExists($name): bool
+    public function offsetGet(mixed $name): mixed
+    {
+        return $this->get($name);
+    }
+
+    public function offsetExists(mixed $name): bool
     {
         return $this->__isset($name);
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($name)
+    public function offsetUnset(mixed $name): void
     {
         $this->__unset($name);
-    }
-
-    #[\ReturnTypeWillChange]
-    public function offsetGet($name)
-    {
-        return $this->getAttr($name);
-    }
-
-    /**
-     * 设置不使用的全局查询范围
-     * @access public
-     * @param array $scope 不启用的全局查询范围
-     * @return Query
-     */
-    public static function withoutGlobalScope(array $scope = null)
-    {
-        $model = new static();
-
-        return $model->db($scope);
-    }
-
-    /**
-     * 切换后缀进行查询
-     * @access public
-     * @param string $suffix 切换的表后缀
-     * @return Model
-     */
-    public static function suffix(string $suffix)
-    {
-        $model = new static();
-        $model->setSuffix($suffix);
-
-        return $model;
-    }
-
-    /**
-     * 切换数据库连接进行查询
-     * @access public
-     * @param string $connection 数据库连接标识
-     * @return Model
-     */
-    public static function connect(string $connection)
-    {
-        $model = new static();
-        $model->setConnection($connection);
-
-        return $model;
-    }
-
-    public function __call($method, $args)
-    {
-        if (isset(static::$macro[static::class][$method])) {
-            return call_user_func_array(static::$macro[static::class][$method]->bindTo($this, static::class), $args);
-        }
-
-        return call_user_func_array([$this->db(), $method], $args);
-    }
-
-    public static function __callStatic($method, $args)
-    {
-        if (isset(static::$macro[static::class][$method])) {
-            return call_user_func_array(static::$macro[static::class][$method]->bindTo(null, static::class), $args);
-        }
-
-        $model = new static();
-
-        return call_user_func_array([$model->db(), $method], $args);
-    }
-
-    /**
-     * 析构方法
-     * @access public
-     */
-    public function __destruct()
-    {
-        if ($this->lazySave) {
-            $this->save();
-        }
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -23,12 +24,12 @@ use PhpOffice\PhpWord\Shared\XMLWriter;
 use PhpOffice\PhpWord\Style;
 
 /**
- * ODText styles part writer: styles.xml
+ * ODText styles part writer: styles.xml.
  */
 class Styles extends AbstractPart
 {
     /**
-     * Write part
+     * Write part.
      *
      * @return string
      */
@@ -65,10 +66,8 @@ class Styles extends AbstractPart
 
     /**
      * Write default styles.
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      */
-    private function writeDefault(XMLWriter $xmlWriter)
+    private function writeDefault(XMLWriter $xmlWriter): void
     {
         $xmlWriter->startElement('style:default-style');
         $xmlWriter->writeAttribute('style:family', 'paragraph');
@@ -84,20 +83,21 @@ class Styles extends AbstractPart
         $xmlWriter->endElement(); // style:paragraph-properties
 
         $language = $this->getParentWriter()->getPhpWord()->getSettings()->getThemeFontLang();
-        $latinLang = $language != null && is_string($language->getLatin()) ? explode('-', $language->getLatin()) : array('fr', 'FR');
-        $asianLang = $language != null && is_string($language->getEastAsia()) ? explode('-', $language->getEastAsia()) : array('zh', 'CN');
-        $complexLang = $language != null && is_string($language->getBidirectional()) ? explode('-', $language->getBidirectional()) : array('hi', 'IN');
+        $latinLang = $language != null && is_string($language->getLatin()) ? explode('-', $language->getLatin()) : ['fr', 'FR'];
+        $asianLang = $language != null && is_string($language->getEastAsia()) ? explode('-', $language->getEastAsia()) : ['zh', 'CN'];
+        $complexLang = $language != null && is_string($language->getBidirectional()) ? explode('-', $language->getBidirectional()) : ['hi', 'IN'];
         if ($this->getParentWriter()->getPhpWord()->getSettings()->hasHideGrammaticalErrors()) {
-            $latinLang = $asianLang = $complexLang = array('zxx', 'none');
+            $latinLang = $asianLang = $complexLang = ['zxx', 'none'];
         }
 
         // Font
         $xmlWriter->startElement('style:text-properties');
-        $xmlWriter->writeAttribute('style:use-window-font-color', 'true');
+        $xmlWriter->writeAttribute('style:use-window-font-color', 'false');
         $xmlWriter->writeAttribute('style:font-name', Settings::getDefaultFontName());
         $xmlWriter->writeAttribute('fo:font-size', Settings::getDefaultFontSize() . 'pt');
         $xmlWriter->writeAttribute('fo:language', $latinLang[0]);
         $xmlWriter->writeAttribute('fo:country', $latinLang[1]);
+        $xmlWriter->writeAttribute('fo:color', '#' . Settings::getDefaultFontColor());
         $xmlWriter->writeAttribute('style:letter-kerning', 'true');
         $xmlWriter->writeAttribute('style:font-name-asian', Settings::getDefaultFontName() . '2');
         $xmlWriter->writeAttribute('style:font-size-asian', Settings::getDefaultFontSize() . 'pt');
@@ -117,10 +117,8 @@ class Styles extends AbstractPart
 
     /**
      * Write named styles.
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      */
-    private function writeNamed(XMLWriter $xmlWriter)
+    private function writeNamed(XMLWriter $xmlWriter): void
     {
         $styles = Style::getStyles();
         if (count($styles) > 0) {
@@ -128,7 +126,7 @@ class Styles extends AbstractPart
                 if ($style->isAuto() === false) {
                     $styleClass = str_replace('\\Style\\', '\\Writer\\ODText\\Style\\', get_class($style));
                     if (class_exists($styleClass)) {
-                        /** @var $styleWriter \PhpOffice\PhpWord\Writer\ODText\Style\AbstractStyle Type hint */
+                        /** @var \PhpOffice\PhpWord\Writer\ODText\Style\AbstractStyle $styleWriter Type hint */
                         $styleWriter = new $styleClass($xmlWriter, $style);
                         $styleWriter->write();
                     }
@@ -138,9 +136,9 @@ class Styles extends AbstractPart
     }
 
     /**
-     * Convert int in twips to inches/cm then to string and append unit
+     * Convert int in twips to inches/cm then to string and append unit.
      *
-     * @param int|float $twips
+     * @param float|int $twips
      * @param float $factor
      * return string
      */
@@ -153,11 +151,9 @@ class Styles extends AbstractPart
     }
 
     /**
-     * call writePageLayoutIndiv to write page layout styles for each page
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
+     * call writePageLayoutIndiv to write page layout styles for each page.
      */
-    private function writePageLayout(XMLWriter $xmlWriter)
+    private function writePageLayout(XMLWriter $xmlWriter): void
     {
         $sections = $this->getParentWriter()->getPhpWord()->getSections();
         $countsects = count($sections);
@@ -169,11 +165,10 @@ class Styles extends AbstractPart
     /**
      * Write page layout styles.
      *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      * @param \PhpOffice\PhpWord\Element\Section $section
      * @param int $sectionNbr
      */
-    private function writePageLayoutIndiv(XMLWriter $xmlWriter, $section, $sectionNbr)
+    private function writePageLayoutIndiv(XMLWriter $xmlWriter, $section, $sectionNbr): void
     {
         $sty = $section->getStyle();
         if (count($section->getHeaders()) > 0) {
@@ -254,10 +249,8 @@ class Styles extends AbstractPart
 
     /**
      * Write master style.
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      */
-    private function writeMaster(XMLWriter $xmlWriter)
+    private function writeMaster(XMLWriter $xmlWriter): void
     {
         $xmlWriter->startElement('office:master-styles');
 
@@ -282,6 +275,7 @@ class Styles extends AbstractPart
                     }
                 }
                 $xmlWriter->endElement(); // style:header
+
                 break;
             }
             foreach ($sections[$i]->getFooters() as $hdr) {
@@ -295,6 +289,7 @@ class Styles extends AbstractPart
                     }
                 }
                 $xmlWriter->endElement(); // style:footer
+
                 break;
             }
             $xmlWriter->endElement(); // style:master-page

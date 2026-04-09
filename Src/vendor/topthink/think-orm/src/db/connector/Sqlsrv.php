@@ -1,4 +1,5 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
@@ -8,6 +9,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+declare(strict_types=1);
 
 namespace think\db\connector;
 
@@ -15,12 +17,13 @@ use PDO;
 use think\db\PDOConnection;
 
 /**
- * Sqlsrv数据库驱动
+ * Sqlsrv数据库驱动.
  */
 class Sqlsrv extends PDOConnection
 {
     /**
-     * 默认PDO连接参数
+     * 默认PDO连接参数.
+     *
      * @var array
      */
     protected $params = [
@@ -31,9 +34,10 @@ class Sqlsrv extends PDOConnection
     ];
 
     /**
-     * 解析pdo连接的dsn信息
-     * @access protected
-     * @param  array $config 连接信息
+     * 解析pdo连接的dsn信息.
+     *
+     * @param array $config 连接信息
+     *
      * @return string
      */
     protected function parseDsn(array $config): string
@@ -52,23 +56,24 @@ class Sqlsrv extends PDOConnection
     }
 
     /**
-     * 取得数据表的字段信息
-     * @access public
-     * @param  string $tableName
+     * 取得数据表的字段信息.
+     *
+     * @param string $tableName
+     *
      * @return array
      */
     public function getFields(string $tableName): array
     {
         [$tableName] = explode(' ', $tableName);
-        strpos($tableName, '.') && $tableName = substr($tableName, strpos($tableName, '.') + 1);
-        $sql = "SELECT   column_name,   data_type,   column_default,   is_nullable
-        FROM    information_schema.tables AS t
-        JOIN    information_schema.columns AS c
-        ON  t.table_catalog = c.table_catalog
-        AND t.table_schema  = c.table_schema
-        AND t.table_name    = c.table_name
-        WHERE   t.table_name = '$tableName'";
+        str_contains($tableName, '.') && $tableName = substr($tableName, strpos($tableName, '.') + 1);
 
+        $sql    = "SELECT   column_name,   data_type,   column_default,   is_nullable
+            FROM    information_schema.tables AS t
+            JOIN    information_schema.columns AS c
+            ON  t.table_catalog = c.table_catalog
+            AND t.table_schema  = c.table_schema
+            AND t.table_name    = c.table_name
+            WHERE   t.table_name = '$tableName'";
         $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
@@ -100,9 +105,10 @@ class Sqlsrv extends PDOConnection
     }
 
     /**
-     * 取得数据表的字段信息
-     * @access public
-     * @param  string $dbName
+     * 取得数据表的字段信息.
+     *
+     * @param string $dbName
+     *
      * @return array
      */
     public function getTables(string $dbName = ''): array
@@ -123,4 +129,17 @@ class Sqlsrv extends PDOConnection
         return $info;
     }
 
+    /**
+     * 获取设置时区的SQL语句.
+     *
+     * @param string $timezone 时区名称，如 'Asia/Shanghai' 或 '+08:00'
+     *
+     * @return string
+     */
+    protected function getSetTimezoneSql(string $timezone): string
+    {
+        // SQL Server 使用 SET TIME ZONE 命令
+        // 注意：SQL Server 2016 及以上版本才支持此命令
+        return "SET TIME ZONE '$timezone'";
+    }
 }

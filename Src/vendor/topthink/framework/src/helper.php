@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -37,13 +37,14 @@ use think\response\View;
 use think\response\Xml;
 use think\route\Url as UrlBuild;
 use think\Validate;
+use think\validate\ValidateRuleSet;
 
 if (!function_exists('abort')) {
     /**
      * 抛出HTTP异常
-     * @param integer|Response $code    状态码 或者 Response对象实例
-     * @param string           $message 错误信息
-     * @param array            $header  参数
+     * @param int|Response $code    状态码 或者 Response对象实例
+     * @param string       $message 错误信息
+     * @param array        $header  参数
      */
     function abort($code, string $message = '', array $header = [])
     {
@@ -92,7 +93,7 @@ if (!function_exists('cache')) {
      * @param string $tag     缓存标签
      * @return mixed
      */
-    function cache(string $name = null, $value = '', $options = null, $tag = null)
+    function cache(?string $name = null, $value = '', $options = null, $tag = null)
     {
         if (is_null($name)) {
             return app('cache');
@@ -100,7 +101,7 @@ if (!function_exists('cache')) {
 
         if ('' === $value) {
             // 获取缓存
-            return 0 === strpos($name, '?') ? Cache::has(substr($name, 1)) : Cache::get($name);
+            return str_starts_with($name, '?') ? Cache::has(substr($name, 1)) : Cache::get($name);
         } elseif (is_null($value)) {
             // 删除缓存
             return Cache::delete($name);
@@ -134,7 +135,7 @@ if (!function_exists('config')) {
             return Config::set($name, $value);
         }
 
-        return 0 === strpos($name, '?') ? Config::has(substr($name, 1)) : Config::get($name, $value);
+        return str_starts_with($name, '?') ? Config::has(substr($name, 1)) : Config::get($name, $value);
     }
 }
 
@@ -153,7 +154,7 @@ if (!function_exists('cookie')) {
             Cookie::delete($name, $option ?: []);
         } elseif ('' === $value) {
             // 获取
-            return 0 === strpos($name, '?') ? Cookie::has(substr($name, 1)) : Cookie::get($name);
+            return str_starts_with($name, '?') ? Cookie::has(substr($name, 1)) : Cookie::get($name);
         } else {
             // 设置
             return Cookie::set($name, $value, $option);
@@ -211,7 +212,7 @@ if (!function_exists('env')) {
      * @param string $default 默认值
      * @return mixed
      */
-    function env(string $name = null, $default = null)
+    function env(?string $name = null, $default = null)
     {
         return Env::get($name, $default);
     }
@@ -246,14 +247,14 @@ if (!function_exists('halt')) {
 if (!function_exists('input')) {
     /**
      * 获取输入数据 支持默认值和过滤
-     * @param string $key     获取的变量名
+     * @param string $key 获取的变量名
      * @param mixed  $default 默认值
-     * @param string $filter  过滤方法
+     * @param string|array|null $filter 过滤方法
      * @return mixed
      */
     function input(string $key = '', $default = null, $filter = '')
     {
-        if (0 === strpos($key, '?')) {
+        if (str_starts_with($key, '?')) {
             $key = substr($key, 1);
             $has = true;
         }
@@ -275,8 +276,8 @@ if (!function_exists('input')) {
         }
 
         return isset($has) ?
-        request()->has($key, $method) :
-        request()->$method($key, $default, $filter);
+            request()->has($key, $method) :
+            request()->$method($key, $default, $filter);
     }
 }
 
@@ -422,7 +423,7 @@ if (!function_exists('session')) {
             Session::delete($name);
         } elseif ('' === $value) {
             // 判断或获取
-            return 0 === strpos($name, '?') ? Session::has(substr($name, 1)) : Session::get($name);
+            return str_starts_with($name, '?') ? Session::has(substr($name, 1)) : Session::get($name);
         } else {
             // 设置
             Session::set($name, $value);
@@ -522,12 +523,12 @@ if (!function_exists('validate')) {
                 $v->rule($validate);
             }
         } else {
-            if (strpos($validate, '.')) {
+            if (str_contains($validate, '.')) {
                 // 支持场景
                 [$validate, $scene] = explode('.', $validate);
             }
 
-            $class = false !== strpos($validate, '\\') ? $validate : app()->parseClass('validate', $validate);
+            $class = str_contains($validate, '\\') ? $validate : app()->parseClass('validate', $validate);
 
             $v = new $class();
 
@@ -537,6 +538,18 @@ if (!function_exists('validate')) {
         }
 
         return $v->message($message)->batch($batch)->failException($failException);
+    }
+}
+
+if (!function_exists('rules')) {
+    /**
+     * 定义ValidateRuleSet规则集合
+     * @param array    $rules     验证因子集
+     * @return ValidateRuleSet
+     */
+    function rules(array $rules): ValidateRuleSet
+    {
+        return ValidateRuleSet::rules($rules);
     }
 }
 

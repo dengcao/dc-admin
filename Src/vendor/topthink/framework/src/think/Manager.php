@@ -2,13 +2,13 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: yunwuxin <448901948@qq.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace think;
 
@@ -17,9 +17,6 @@ use think\helper\Str;
 
 abstract class Manager
 {
-    /** @var App */
-    protected $app;
-
     /**
      * 驱动
      * @var array
@@ -32,9 +29,8 @@ abstract class Manager
      */
     protected $namespace = null;
 
-    public function __construct(App $app)
+    public function __construct(protected App $app)
     {
-        $this->app = $app;
     }
 
     /**
@@ -42,7 +38,7 @@ abstract class Manager
      * @param null|string $name
      * @return mixed
      */
-    protected function driver(string $name = null)
+    protected function driver(?string $name = null)
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -93,8 +89,8 @@ abstract class Manager
      */
     protected function resolveClass(string $type): string
     {
-        if ($this->namespace || false !== strpos($type, '\\')) {
-            $class = false !== strpos($type, '\\') ? $type : $this->namespace . Str::studly($type);
+        if ($this->namespace || str_contains($type, '\\')) {
+            $class = str_contains($type, '\\') ? $type : $this->namespace . Str::studly($type);
 
             if (class_exists($class)) {
                 return $class;

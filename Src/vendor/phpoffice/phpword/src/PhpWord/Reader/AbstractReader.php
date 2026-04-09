@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -20,7 +21,7 @@ namespace PhpOffice\PhpWord\Reader;
 use PhpOffice\PhpWord\Exception\Exception;
 
 /**
- * Reader abstract class
+ * Reader abstract class.
  *
  * @since 0.8.0
  *
@@ -36,11 +37,18 @@ abstract class AbstractReader implements ReaderInterface
     protected $readDataOnly = true;
 
     /**
-     * File pointer
+     * File pointer.
      *
      * @var bool|resource
      */
     protected $fileHandle;
+
+    /**
+     * Load images.
+     *
+     * @var bool
+     */
+    protected $imageLoading = true;
 
     /**
      * Read data only?
@@ -54,9 +62,10 @@ abstract class AbstractReader implements ReaderInterface
     }
 
     /**
-     * Set read data only
+     * Set read data only.
      *
      * @param bool $value
+     *
      * @return self
      */
     public function setReadDataOnly($value = true)
@@ -66,12 +75,22 @@ abstract class AbstractReader implements ReaderInterface
         return $this;
     }
 
+    public function hasImageLoading(): bool
+    {
+        return $this->imageLoading;
+    }
+
+    public function setImageLoading(bool $value): self
+    {
+        $this->imageLoading = $value;
+
+        return $this;
+    }
+
     /**
-     * Open file for reading
+     * Open file for reading.
      *
      * @param string $filename
-     *
-     * @throws \PhpOffice\PhpWord\Exception\Exception
      *
      * @return resource
      */
@@ -83,7 +102,7 @@ abstract class AbstractReader implements ReaderInterface
         }
 
         // Open file
-        $this->fileHandle = fopen($filename, 'r');
+        $this->fileHandle = fopen($filename, 'rb');
         if ($this->fileHandle === false) {
             throw new Exception("Could not open file $filename for reading.");
         }
@@ -93,6 +112,7 @@ abstract class AbstractReader implements ReaderInterface
      * Can the current ReaderInterface read the file?
      *
      * @param string $filename
+     *
      * @return bool
      */
     public function canRead($filename)
@@ -108,17 +128,5 @@ abstract class AbstractReader implements ReaderInterface
         }
 
         return true;
-    }
-
-    /**
-     * Read data only?
-     *
-     * @deprecated 0.10.0
-     *
-     * @codeCoverageIgnore
-     */
-    public function getReadDataOnly()
-    {
-        return $this->isReadDataOnly();
     }
 }

@@ -1,14 +1,15 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace think\facade;
 
@@ -20,7 +21,7 @@ use think\Facade;
  * @mixin \think\View
  * @method static \think\View engine(string $type = null) 获取模板引擎
  * @method static \think\View assign(string|array $name, mixed $value = null) 模板变量赋值
- * @method static \think\View filter(\think\Callable $filter = null) 视图过滤
+ * @method static \think\View filter(callable $filter = null) 视图过滤
  * @method static string fetch(string $template = '', array $vars = []) 解析和获取模板内容 用于输出
  * @method static string display(string $content, array $vars = []) 渲染内容输出
  * @method static mixed __set(string $name, mixed $value) 模板变量赋值

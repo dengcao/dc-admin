@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\index\controller;
@@ -43,7 +43,7 @@ class comment
 
     function __construct()
     {
-        $this->cmt_url=get_cz_path()."static/index/cz_cmt/";
+        $this->cmt_url=get_cz_path()."static/index/dc_cmt/";
         $this->cmt_faces = comment_face();
     }
 
@@ -120,7 +120,8 @@ class comment
                 if ($this->cmt_config['is_br']) {
                     $saytext = nl2br($saytext);
                 }
-                $arrparentid = trim($r['arrparentid']);
+//                $arrparentid = trim($r['arrparentid']);
+                $arrparentid = $r['arrparentid'];
 
                 $parent_context = "";//初始化，获取父评论的内容
                 if ($arrparentid) {

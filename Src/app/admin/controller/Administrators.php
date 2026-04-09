@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -18,11 +18,11 @@ use app\admin\model\Administrators as AdministratorsModel;
 class Administrators
 {
     protected $middleware = [
-        'caozha_auth' 	=> ['except' => '' ],//验证是否管理员
+        'dengcao_auth' 	=> ['except' => '' ],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("admin");//检测是否有权限
+        dc_auth("admin");//检测是否有权限
     }
 
     public function index()
@@ -84,11 +84,11 @@ class Administrators
     {
         $admin_id=Request::param("admin_id",'','filter_sql');
         if(!is_numeric($admin_id)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $admin=AdministratorsModel::with('roles')->where("admin_id","=",$admin_id)->findOrEmpty();
         if ($admin->isEmpty()) {
-            caozha_error("[ID:".$admin_id."]管理员不存在。","",1);
+            dengcao_error("[ID:".$admin_id."]管理员不存在。","",1);
         }else{
             View::assign([
                 'admin'  => $admin
@@ -143,14 +143,14 @@ class Administrators
     {
         $admin_id=Request::param("admin_id",'','filter_sql');
         if(!is_numeric($admin_id)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $admin=AdministratorsModel::with('roles')->withAttr('is_enabled', function($value) {
             $is_enabled = [0=>'<i class="layui-icon layui-icon-close hese"></i>',1=>'<i class="layui-icon layui-icon-ok olivedrab"></i>'];
             return $is_enabled[$value];
         })->where("admin_id","=",$admin_id)->findOrEmpty();
         if ($admin->isEmpty()) {
-            caozha_error("[ID:".$admin_id."]管理员不存在。","",1);
+            dengcao_error("[ID:".$admin_id."]管理员不存在。","",1);
         }else{
             View::assign([
                 'admin'  => $admin

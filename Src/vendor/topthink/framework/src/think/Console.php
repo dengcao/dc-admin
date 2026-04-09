@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | TopThink [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2015 http://www.topthink.com All rights reserved.
+// | Copyright (c) 2006~2025 http://www.topthink.com All rights reserved.
 // +----------------------------------------------------------------------
 // | Author: zhangyajun <448901948@qq.com>
 // +----------------------------------------------------------------------
@@ -27,6 +27,8 @@ use think\console\command\make\Model;
 use think\console\command\make\Service;
 use think\console\command\make\Subscribe;
 use think\console\command\make\Validate;
+use think\console\command\optimize\Config;
+use think\console\command\optimize\Optimize;
 use think\console\command\optimize\Route;
 use think\console\command\optimize\Schema;
 use think\console\command\RouteList;
@@ -46,9 +48,6 @@ use think\console\output\driver\Buffer;
  */
 class Console
 {
-
-    protected $app;
-
     /** @var Command[] */
     protected $commands = [];
 
@@ -72,6 +71,8 @@ class Console
         'make:listener'    => Listener::class,
         'make:service'     => Service::class,
         'make:subscribe'   => Subscribe::class,
+        'optimize'         => Optimize::class,
+        'optimize:config'  => Config::class,
         'optimize:route'   => Route::class,
         'optimize:schema'  => Schema::class,
         'run'              => RunServer::class,
@@ -87,10 +88,8 @@ class Console
      */
     protected static $startCallbacks = [];
 
-    public function __construct(App $app)
+    public function __construct(protected App $app)
     {
-        $this->app = $app;
-
         $this->initialize();
 
         $this->definition = $this->getDefaultInputDefinition();
@@ -98,13 +97,19 @@ class Console
         //加载指令
         $this->loadCommands();
 
+        // 设置执行用户
+        $user = $this->app->config->get('console.user');
+        if (!empty($user)) {
+            $this->setUser($user);
+        }
+
         $this->start();
     }
 
     /**
      * 初始化
      */
-    protected function initialize()
+    protected function initialize():void
     {
         if (!$this->app->initialized()) {
             $this->app->initialize();
@@ -115,7 +120,7 @@ class Console
     /**
      * 构造request
      */
-    protected function makeRequest()
+    protected function makeRequest():void
     {
         $url = $this->app->config->get('app.url', 'http://localhost');
 
@@ -401,7 +406,7 @@ class Console
      * @param string $name 指令名 留空则自动获取
      * @return Command|void
      */
-    public function addCommand($command, string $name = '')
+    public function addCommand(string|Command $command, string $name = '')
     {
         if ($name) {
             $this->commands[$name] = $command;
@@ -422,7 +427,7 @@ class Console
         $command->setApp($this->app);
 
         if (null === $command->getDefinition()) {
-            throw new LogicException(sprintf('Command class "%s" is not correctly initialized. You probably forgot to call the parent constructor.', get_class($command)));
+            throw new LogicException(sprintf('Command class "%s" is not correctly initialized. You probably forgot to call the parent constructor.', $command::class));
         }
 
         $this->commands[$command->getName()] = $command;
@@ -595,7 +600,7 @@ class Console
      * @return Command[]
      * @api
      */
-    public function all(string $namespace = null): array
+    public function all(?string $namespace = null): array
     {
         if (null === $namespace) {
             return $this->commands;
@@ -717,7 +722,7 @@ class Console
      * @param array|\Traversable $collection
      * @return array
      */
-    private function findAlternatives(string $name, $collection): array
+    private function findAlternatives(string $name, array|\Traversable $collection): array
     {
         $threshold    = 1e3;
         $alternatives = [];
@@ -738,7 +743,7 @@ class Console
                 }
 
                 $lev = levenshtein($subname, $parts[$i]);
-                if ($lev <= strlen($subname) / 3 || '' !== $subname && false !== strpos($parts[$i], $subname)) {
+                if ($lev <= strlen($subname) / 3 || '' !== $subname && str_contains($parts[$i], $subname)) {
                     $alternatives[$collectionName] = $exists ? $alternatives[$collectionName] + $lev : $lev;
                 } elseif ($exists) {
                     $alternatives[$collectionName] += $threshold;
@@ -748,7 +753,7 @@ class Console
 
         foreach ($collection as $item) {
             $lev = levenshtein($name, $item);
-            if ($lev <= strlen($name) / 3 || false !== strpos($item, $name)) {
+            if ($lev <= strlen($name) / 3 || str_contains($item, $name)) {
                 $alternatives[$item] = isset($alternatives[$item]) ? $alternatives[$item] - $lev : $lev;
             }
         }
@@ -782,5 +787,4 @@ class Console
 
         return $namespaces;
     }
-
 }

@@ -8,20 +8,20 @@
         <div class="pl-textarea"><textarea class="pl-post-word" id="pl-520am-f-saytext-reply" placeholder="@ {literal}{{username}}：{/literal}"></textarea></div>
         <div class="pl-tools">
             <ul>
-                {if $cmt_config.is_face}<li onclick="caozha.showPickFace(event,1)"><i class="iconfont icon-face">&#xe60a;</i></li>{/if}
-                {if $cmt_config.is_img}<li onclick="caozha.showPickImg(event,1)"><i class="iconfont icon-img">&#xe610;</i></li>{/if}
+                {if $cmt_config.is_face}<li onclick="dengcao.showPickFace(event,1)"><i class="iconfont icon-face">&#xe60a;</i></li>{/if}
+                {if $cmt_config.is_img}<li onclick="dengcao.showPickImg(event,1)"><i class="iconfont icon-img">&#xe610;</i></li>{/if}
                 {if $cmt_config.is_captcha}<li class="ShowPlKey">
                     <input type="text" id="pl-key-reply" class="pl-key" size="10" placeholder="验证码" />
-                    <img src="{:url('index/comment/captcha')}" align="absmiddle" name="plKeyImg" class="plKeyImg" onclick="caozha.updateKey()" title="看不清楚,点击刷新" />
+                    <img src="{:url('index/comment/captcha')}" align="absmiddle" name="plKeyImg" class="plKeyImg" onclick="dengcao.updateKey()" title="看不清楚,点击刷新" />
                 </li>{/if}
-                <li class="pl-tools-lastchild"><button class="pl-submit-btn" onclick="caozha.submitComment(this,{literal}{{plid}}{/literal})">发 布</button></li>
+                <li class="pl-tools-lastchild"><button class="pl-submit-btn" onclick="dengcao.submitComment(this,{literal}{{plid}}{/literal})">发 布</button></li>
                 <li  class="username"><i class="iconfont">&#xe613;</i><input type="text" id="pl-username-reply" class="pl-key" size="15" placeholder="你的昵称" value="" /></li>
             </ul>
         </div>
         <div class="pl-face-box"  id="pl-face-box-reply">
             <div class="pl-face-box-before"><a class="pl-icon icon-face"></a></div>
             {foreach $faces as $vo}
-            <li  onclick="caozha.addplface('[/{$vo[0]}]',1)"><a href="javascript:;"><img width=20 border=0 height=20 src="__CAOZHA-STATIC__/cz_cmt/face/{$vo[1]}"></a></li>
+            <li  onclick="dengcao.addplface('[/{$vo[0]}]',1)"><a href="javascript:;"><img width=20 border=0 height=20 src="__DENGCAO-STATIC__/dc_cmt/face/{$vo[1]}"></a></li>
             {/foreach}
  </div>
         <div class="pl-img-box"  id="pl-img-box-reply">
@@ -42,7 +42,7 @@
         <div class="pl-area-post">
             <div class="pl-show-title"><span>{{plusername}}</span> <span class="pl-show-time pl-fr">{{formattime}}</span></div>
             <div class="pl-show-saytext">{{{saytext}}}</div>
-            <div class="pl-show-tools"><a id="pl-err-info-{{plid}}"></a> <a href="javascript:;" onclick="caozha.doForPl({{plid}},1,this)" class="is_like"><i class="caozha-iconfont caozha-good1"></i><span id="pl-1-{{plid}}">{{zcnum}}</span></a> <a href="javascript:;" onclick="caozha.doForPl({{plid}},0,this)" class="is_bad"><i class="caozha-iconfont caozha-bad1"></i><span id="pl-0-{{plid}}">{{fdnum}}</span></a> <a class="pl-reply is_reply" onclick="caozha.showReply({{plid}},'{{plusername}}')" href="javascript:;"><i class="iconfont">&#xe61c;</i></a></div>
+            <div class="pl-show-tools"><a id="pl-err-info-{{plid}}"></a> <a href="javascript:;" onclick="dengcao.doForPl({{plid}},1,this)" class="is_like"><i class="dengcao-iconfont dengcao-good1"></i><span id="pl-1-{{plid}}">{{zcnum}}</span></a> <a href="javascript:;" onclick="dengcao.doForPl({{plid}},0,this)" class="is_bad"><i class="dengcao-iconfont dengcao-bad1"></i><span id="pl-0-{{plid}}">{{fdnum}}</span></a> <a class="pl-reply is_reply" onclick="dengcao.showReply({{plid}},'{{plusername}}')" href="javascript:;"><i class="iconfont">&#xe61c;</i></a></div>
             <div class="pl-show-replay"></div>
         </div>
         <div class="pl-clr"></div>
@@ -57,29 +57,29 @@
 {/literal}
 
        <!--div class="pl-area-userpic">
-        <img id="pl-userpic" src="__CAOZHA-STATIC__/cz_cmt/assets/nouserpic.gif">      </div-->
+        <img id="pl-userpic" src="__DENGCAO-STATIC__/dc_cmt/assets/nouserpic.gif">      </div-->
 <div class="pl-area-post">
     <div class="pl-post">
         <div class="pl-textarea"><textarea class="pl-post-word" id="pl-520am-f-saytext" placeholder="写下你想说的，开始我们的对话"></textarea>
         </div>
         <div class="pl-tools">
             <ul>
-                {if $cmt_config.is_face}<li onclick="caozha.showPickFace(event,0)"><i class="iconfont icon-face">&#xe60a;</i></li>{/if}
-                {if $cmt_config.is_img}<li onclick="caozha.showPickImg(event,0)"><i class="iconfont icon-img">&#xe610;</i></li>{/if}
+                {if $cmt_config.is_face}<li onclick="dengcao.showPickFace(event,0)"><i class="iconfont icon-face">&#xe60a;</i></li>{/if}
+                {if $cmt_config.is_img}<li onclick="dengcao.showPickImg(event,0)"><i class="iconfont icon-img">&#xe610;</i></li>{/if}
                 {if $cmt_config.is_captcha}<li class="ShowPlKey">
                     <div style="margin-top:5px;">
                         <input type="text" id="pl-key" class="pl-key" size="10" placeholder="验证码" />
-                        <img src="{:url('index/comment/captcha')}?" align="absmiddle" name="plKeyImg" class="plKeyImg" onclick="caozha.updateKey()" title="看不清楚,点击刷新" />
+                        <img src="{:url('index/comment/captcha')}?" align="absmiddle" name="plKeyImg" class="plKeyImg" onclick="dengcao.updateKey()" title="看不清楚,点击刷新" />
                     </div>
                 </li>{/if}
-                <li class="pl-tools-lastchild"><button class="pl-submit-btn" id="pl-submit-btn-main" onclick="caozha.submitComment(this)">发 布</button></li>
+                <li class="pl-tools-lastchild"><button class="pl-submit-btn" id="pl-submit-btn-main" onclick="dengcao.submitComment(this)">发 布</button></li>
                 <li  class="username"><i class="iconfont">&#xe613;</i><input type="text" id="pl-username" class="pl-key" size="15" placeholder="你的昵称" value="" /></li>
             </ul>
         </div>
         <div class="pl-face-box" id="pl-face-box">
             <div class="pl-face-box-before"><a class="pl-icon icon-face"></a></div>
             {foreach $faces as $vo}
-            <li  onclick="caozha.addplface('[/{$vo[0]}]',0)"><a href="javascript:;" title="{$vo[0]}"><img width=20 border=0 height=20 src="__CAOZHA-STATIC__/cz_cmt/face/{$vo[1]}" alt="{$vo[0]}"></a></li>
+            <li  onclick="dengcao.addplface('[/{$vo[0]}]',0)"><a href="javascript:;" title="{$vo[0]}"><img width=20 border=0 height=20 src="__DENGCAO-STATIC__/dc_cmt/face/{$vo[1]}" alt="{$vo[0]}"></a></li>
             {/foreach}
 </div>
        <div class="pl-img-box"  id="pl-img-box">
@@ -100,4 +100,4 @@
 <div class="pl-header"><em id="pl-joinnum">0</em>人参与，<em  id="pl-totalnum">0</em>条评论<span class="pl-userinfo" id="pl-userinfo"></span></div>
 <div class="pl-show-list" id="pl-show-all"><div class="pl-null NewsComment_loading"><i class="pl-loading"></i>正在载入评论列表...</div></div>
 <div id="pl-pagination"></div>
-<button onclick="caozha.getNewsComment(0,this);" class="showAllComment buttonGray">查看更多</button>
+<button onclick="dengcao.getNewsComment(0,this);" class="showAllComment buttonGray">查看更多</button>

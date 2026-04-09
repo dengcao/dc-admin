@@ -2,16 +2,16 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>系统日志 - Powered by __CAOZHA-SYS-NAME__ __CAOZHA-SYS-VERSION__</title>
+    <title>系统日志 - Powered by __DENGCAO-SYS-NAME__ __DENGCAO-SYS-VERSION__</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link rel="stylesheet" href="__CAOZHA-LAYUIMINI__/lib/layui/css/layui.css" media="all">
-    <link rel="stylesheet" href="__CAOZHA-LAYUIMINI__/css/public.css" media="all">
-    <script src="__CAOZHA-STATIC__/js/jquery-3.4.1.min.js"></script>
-    <script src="__CAOZHA-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
-    <script src="__CAOZHA-STATIC__/js/all.js"></script>
-    <link rel="stylesheet" href="__CAOZHA-STATIC__/css/style.css" media="all">
+    <link rel="stylesheet" href="__DENGCAO-LAYUIMINI__/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="__DENGCAO-LAYUIMINI__/css/public.css" media="all">
+    <script src="__DENGCAO-STATIC__/js/jquery-3.4.1.min.js"></script>
+    <script src="__DENGCAO-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
+    <script src="__DENGCAO-STATIC__/js/all.js"></script>
+    <link rel="stylesheet" href="__DENGCAO-STATIC__/css/style.css" media="all">
 </head>
 <body>
 <div class="layuimini-container">
@@ -41,7 +41,7 @@
 
     </div>
 </div>
-<script src="__CAOZHA-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
+<script src="__DENGCAO-LAYUIMINI__/lib/layui/layui.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'table'], function () {
         var form = layui.form,
@@ -94,20 +94,20 @@
                 var log_id_str = log_id_arr.join(",");//转为字符串
 
                 if(log_id_str==""){
-                   // var caozha_error=layer.alert('请先选择的数据。', {
+                   // var dengcao_error=layer.alert('请先选择的数据。', {
                    //      title:'错误提示',
                    //      btn: ['确定'],
                    //      closeBtn: 0,
                    //      btnAlign: 'c',
                    //      icon: 5,
                    //  }, function(){
-                   //     layer.close(caozha_error);
+                   //     layer.close(dengcao_error);
                    //      });
                     layer.msg('请先选择要删除的数据。', {icon: 2});
                     return false;
                 }
 
-                caozha_alert=layer.confirm('确定要删除ID为[ '+log_id_str+' ]的数据吗？<br>删除后无法撤销。',{btn: ['确认删除', '取消删除'],btnAlign: 'c',title:"操作提示"}, function(){
+                dengcao_alert=layer.confirm('确定要删除ID为[ '+log_id_str+' ]的数据吗？<br>删除后无法撤销。',{btn: ['确认删除', '取消删除'],btnAlign: 'c',title:"操作提示"}, function(){
 
                     $.ajax({
                         type: "post",
@@ -129,7 +129,7 @@
                             }
                         }
                     });
-                    layer.close(caozha_alert);//关闭
+                    layer.close(dengcao_alert);//关闭
 
                     });
 
@@ -137,7 +137,7 @@
             }else if(obj.event === 'delete_all'){
 
                 //删除一周前的日志记录
-                caozha_alert=layer.confirm('确定要删除一周前的所有日志记录吗？<br>删除后无法撤销。',{btn: ['确认删除', '取消删除'],btnAlign: 'c',title:"操作提示"}, function(){
+                dengcao_alert=layer.confirm('确定要删除一周前的所有日志记录吗？<br>删除后无法撤销。',{btn: ['确认删除', '取消删除'],btnAlign: 'c',title:"操作提示"}, function(){
 
                     $.ajax({
                         type: "post",
@@ -159,7 +159,7 @@
                             }
                         }
                     });
-                    layer.close(caozha_alert);//关闭
+                    layer.close(dengcao_alert);//关闭
 
                 });
 

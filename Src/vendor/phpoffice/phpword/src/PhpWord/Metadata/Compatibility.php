@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Metadata;
 
 /**
- * Compatibility setting class
+ * Compatibility setting class.
  *
  * @since 0.12.0
  * @see  http://www.datypic.com/sc/ooxml/t-w_CT_Compat.html
@@ -26,19 +27,20 @@ namespace PhpOffice\PhpWord\Metadata;
 class Compatibility
 {
     /**
-     * OOXML version
+     * OOXML version.
      *
      * 12 = 2007
      * 14 = 2010
      * 15 = 2013
      *
      * @var int
+     *
      * @see  http://msdn.microsoft.com/en-us/library/dd909048%28v=office.12%29.aspx
      */
     private $ooxmlVersion = 12;
 
     /**
-     * Get OOXML version
+     * Get OOXML version.
      *
      * @return int
      */
@@ -48,9 +50,10 @@ class Compatibility
     }
 
     /**
-     * Set OOXML version
+     * Set OOXML version.
      *
      * @param int $value
+     *
      * @return self
      */
     public function setOoxmlVersion($value)

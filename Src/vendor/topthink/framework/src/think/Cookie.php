@@ -1,14 +1,15 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace think;
 
@@ -46,19 +47,12 @@ class Cookie
     protected $cookie = [];
 
     /**
-     * 当前Request对象
-     * @var Request
-     */
-    protected $request;
-
-    /**
      * 构造方法
      * @access public
      */
-    public function __construct(Request $request, array $config = [])
+    public function __construct(protected Request $request, array $config = [])
     {
-        $this->request = $request;
-        $this->config  = array_merge($this->config, array_change_key_case($config));
+        $this->config = array_merge($this->config, array_change_key_case($config));
     }
 
     public static function __make(Request $request, Config $config)
@@ -118,6 +112,7 @@ class Cookie
         }
 
         $this->setCookie($name, $value, $expire, $config);
+        $this->request->setCookie($name, $value);
     }
 
     /**
@@ -140,7 +135,7 @@ class Cookie
      * @access public
      * @param  string $name  cookie名称
      * @param  string $value cookie值
-     * @param  mixed  $option 可选参数 可能会是 null|integer|string
+     * @param  mixed  $option 可选参数 可能会是 null|int|string
      * @return void
      */
     public function forever(string $name, string $value = '', $option = null): void
@@ -165,6 +160,7 @@ class Cookie
     {
         $config = array_merge($this->config, array_change_key_case($options));
         $this->setCookie($name, '', time() - 3600, $config);
+        $this->request->setCookie($name, null);
     }
 
     /**
@@ -188,14 +184,14 @@ class Cookie
             [$value, $expire, $option] = $val;
 
             $this->saveCookie(
-                $name,
+                (string) $name,
                 $value,
                 $expire,
                 $option['path'],
                 $option['domain'],
-                $option['secure'] ? true : false,
-                $option['httponly'] ? true : false,
-                $option['samesite']
+                (bool) $option['secure'],
+                (bool) $option['httponly'],
+                $option['samesite'],
             );
         }
     }
@@ -215,18 +211,13 @@ class Cookie
      */
     protected function saveCookie(string $name, string $value, int $expire, string $path, string $domain, bool $secure, bool $httponly, string $samesite): void
     {
-        if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-            setcookie($name, $value, [
-                'expires'  => $expire,
-                'path'     => $path,
-                'domain'   => $domain,
-                'secure'   => $secure,
-                'httponly' => $httponly,
-                'samesite' => $samesite,
-            ]);
-        } else {
-            setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
-        }
+        setcookie($name, $value, [
+            'expires'  => $expire,
+            'path'     => $path,
+            'domain'   => $domain,
+            'secure'   => $secure,
+            'httponly' => $httponly,
+            'samesite' => $samesite,
+        ]);
     }
-
 }

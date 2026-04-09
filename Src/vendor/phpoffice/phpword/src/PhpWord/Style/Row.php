@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,49 +12,49 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Style;
 
 /**
- * Table row style
+ * Table row style.
  *
  * @since 0.8.0
  */
 class Row extends AbstractStyle
 {
     /**
-     * Repeat table row on every new page
+     * Repeat table row on every new page.
      *
      * @var bool
      */
     private $tblHeader = false;
 
     /**
-     * Table row cannot break across pages
+     * Table row cannot break across pages.
      *
      * @var bool
      */
     private $cantSplit = false;
 
     /**
-     * Table row exact height
+     * Table row exact height.
      *
      * @var bool
      */
     private $exactHeight = false;
 
     /**
-     * Create a new row style
+     * Create a new row style.
      */
     public function __construct()
     {
     }
 
     /**
-     * Is tblHeader
+     * Is tblHeader.
      *
      * @return bool
      */
@@ -63,9 +64,10 @@ class Row extends AbstractStyle
     }
 
     /**
-     * Is tblHeader
+     * Is tblHeader.
      *
      * @param bool $value
+     *
      * @return self
      */
     public function setTblHeader($value = true)
@@ -76,7 +78,7 @@ class Row extends AbstractStyle
     }
 
     /**
-     * Is cantSplit
+     * Is cantSplit.
      *
      * @return bool
      */
@@ -86,9 +88,10 @@ class Row extends AbstractStyle
     }
 
     /**
-     * Is cantSplit
+     * Is cantSplit.
      *
      * @param bool $value
+     *
      * @return self
      */
     public function setCantSplit($value = true)
@@ -99,7 +102,7 @@ class Row extends AbstractStyle
     }
 
     /**
-     * Is exactHeight
+     * Is exactHeight.
      *
      * @return bool
      */
@@ -109,9 +112,10 @@ class Row extends AbstractStyle
     }
 
     /**
-     * Set exactHeight
+     * Set exactHeight.
      *
      * @param bool $value
+     *
      * @return self
      */
     public function setExactHeight($value = true)
@@ -119,41 +123,5 @@ class Row extends AbstractStyle
         $this->exactHeight = $this->setBoolVal($value, $this->exactHeight);
 
         return $this;
-    }
-
-    /**
-     * Get tblHeader
-     *
-     * @deprecated 0.10.0
-     *
-     * @codeCoverageIgnore
-     */
-    public function getTblHeader()
-    {
-        return $this->isTblHeader();
-    }
-
-    /**
-     * Get cantSplit
-     *
-     * @deprecated 0.10.0
-     *
-     * @codeCoverageIgnore
-     */
-    public function getCantSplit()
-    {
-        return $this->isCantSplit();
-    }
-
-    /**
-     * Get exactHeight
-     *
-     * @deprecated 0.10.0
-     *
-     * @codeCoverageIgnore
-     */
-    public function getExactHeight()
-    {
-        return $this->isExactHeight();
     }
 }

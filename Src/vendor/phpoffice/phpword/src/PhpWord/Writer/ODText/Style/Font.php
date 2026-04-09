@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Writer\ODText\Style;
 
 /**
- * Font style writer
+ * Font style writer.
  *
  * @since 0.10.0
  */
@@ -27,7 +28,7 @@ class Font extends AbstractStyle
     /**
      * Write style.
      */
-    public function write()
+    public function write(): void
     {
         $style = $this->getStyle();
         if (!$style instanceof \PhpOffice\PhpWord\Style\Font) {
@@ -39,7 +40,7 @@ class Font extends AbstractStyle
         if ($stylep instanceof \PhpOffice\PhpWord\Style\Paragraph) {
             $temp1 = clone $stylep;
             $temp1->setStyleName($style->getStyleName());
-            $temp2 = new \PhpOffice\PhpWord\Writer\ODText\Style\Paragraph($xmlWriter, $temp1);
+            $temp2 = new Paragraph($xmlWriter, $temp1);
             $temp2->write();
         }
 

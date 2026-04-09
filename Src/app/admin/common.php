@@ -1,15 +1,15 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 // 应用公共文件
 
-if (version_compare(PHP_VERSION,"8.1.0",">=")) {error_reporting(0);} //解决php8.1时的错误问题
+//if (version_compare(PHP_VERSION,"8.1.0",">=")) {error_reporting(0);} //解决php8.1时的错误问题
 
 use app\admin\model\Roles;
 use app\admin\model\WebConfig as WebConfigModel;
@@ -29,16 +29,16 @@ use think\facade\Cache;
  *检查当前登陆用户执行操作的权限，如无权限输出警告。
  * @param string $role 权限标识
  */
-function cz_auth($role)
+function dc_auth($role)
 {
     $role_id=Session::get("role_id");
-    if(!$role_id){caozha_error("抱歉，登陆状态已失效，请重新登陆。", url("admin/index/login"), 1,1);}
+    if(!$role_id){dengcao_error("抱歉，登陆状态已失效，请重新登陆。", url("admin/index/login"), 1,1);}
     $roles_data = get_roles($role_id);
     $authorize = explode(",", $roles_data["roles"]);
-    $auth_config = Config::get("app.caozha_role_auths");
+    $auth_config = Config::get("app.dengcao_role_auths");
     if (!in_array($role, $authorize)) {
         $alert = '抱歉，您没有执行此操作的权限！<br><span style="font-size: 12px;color: #9c9da0;">【提示】此操作需要[' . $auth_config[$role]["name"] . ']的权限，您所在的权限组[' . $roles_data["role_name"] . ']没有此权限。</span>';
-        caozha_error($alert, Request::header('referer'), 1);
+        dengcao_error($alert, Request::header('referer'), 1);
     }
 }
 
@@ -47,7 +47,7 @@ function cz_auth($role)
  * @param string $role 权限标识
  * @return boolean
  */
-function is_cz_auth($role)
+function is_dc_auth($role)
 {
     $role_id=Session::get("role_id");
     if(!$role_id){return false;}
@@ -104,7 +104,8 @@ function get_web_config()
         if ($web_config->isEmpty()) {
             return array();
         } else {
-            $web_config_data = object_to_array($web_config->web_config);
+//            $web_config_data = object_to_array($web_config->web_config);
+            $web_config_data=object_to_array(json_decode($web_config->web_config));
             Cache::set('web_config', $web_config_data);
             return $web_config_data;
         }
@@ -274,7 +275,7 @@ function write_syslog($data_arr)
  * @param integer $is_open_new 1=新窗口打开
  * @return string
  */
-function caozha_error($alert, $url, $is_exit = 0,$is_open_new=0)
+function dengcao_error($alert, $url, $is_exit = 0,$is_open_new=0)
 {
     View::assign([
         'alert' => $alert,
@@ -295,7 +296,7 @@ function caozha_error($alert, $url, $is_exit = 0,$is_open_new=0)
  * @param integer $is_exit 1立刻终止程序的执行
  * @return string
  */
-function caozha_success($alert, $url, $is_exit = 0)
+function dengcao_success($alert, $url, $is_exit = 0)
 {
     View::assign([
         'alert' => $alert,
@@ -316,7 +317,7 @@ function caozha_success($alert, $url, $is_exit = 0)
  * @param integer $is_exit 1立刻终止程序的执行
  * @return string
  */
-function caozha_confirm($alert, $js_code, $is_exit = 0)
+function dengcao_confirm($alert, $js_code, $is_exit = 0)
 {
     View::assign([
         'alert' => $alert,
@@ -337,7 +338,7 @@ function caozha_confirm($alert, $js_code, $is_exit = 0)
  * @param integer $is_exit 1立刻终止程序的执行
  * @return string
  */
-function caozha_alert_msg($alert, $url, $time, $is_exit = 0)
+function dengcao_alert_msg($alert, $url, $time, $is_exit = 0)
 {
     View::assign([
         'alert' => $alert,
@@ -374,7 +375,7 @@ function is_login()
  */
 function md5_plus($str)
 {
-    return md5("caozha.com|" . md5($str));
+    return md5("5300.cn|" . md5($str));
 }
 
 

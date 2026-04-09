@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -21,46 +22,47 @@ use PhpOffice\PhpWord\Style\Font;
 use PhpOffice\PhpWord\Style\Paragraph;
 
 /**
- * Text break element
+ * Text break element.
  */
 class TextBreak extends AbstractElement
 {
     /**
-     * Paragraph style
+     * Paragraph style.
      *
-     * @var string|\PhpOffice\PhpWord\Style\Paragraph
+     * @var null|Paragraph|string
      */
-    private $paragraphStyle = null;
+    private $paragraphStyle;
 
     /**
-     * Text style
+     * Text style.
      *
-     * @var string|\PhpOffice\PhpWord\Style\Font
+     * @var null|Font|string
      */
-    private $fontStyle = null;
+    private $fontStyle;
 
     /**
-     * Create a new TextBreak Element
+     * Create a new TextBreak Element.
      *
      * @param mixed $fontStyle
      * @param mixed $paragraphStyle
      */
     public function __construct($fontStyle = null, $paragraphStyle = null)
     {
-        if (!is_null($paragraphStyle)) {
+        if (null !== $paragraphStyle) {
             $paragraphStyle = $this->setParagraphStyle($paragraphStyle);
         }
-        if (!is_null($fontStyle)) {
+        if (null !== $fontStyle) {
             $this->setFontStyle($fontStyle, $paragraphStyle);
         }
     }
 
     /**
-     * Set Text style
+     * Set Text style.
      *
      * @param mixed $style
      * @param mixed $paragraphStyle
-     * @return string|\PhpOffice\PhpWord\Style\Font
+     *
+     * @return Font|string
      */
     public function setFontStyle($style = null, $paragraphStyle = null)
     {
@@ -79,9 +81,9 @@ class TextBreak extends AbstractElement
     }
 
     /**
-     * Get Text style
+     * Get Text style.
      *
-     * @return string|\PhpOffice\PhpWord\Style\Font
+     * @return null|Font|string
      */
     public function getFontStyle()
     {
@@ -89,10 +91,11 @@ class TextBreak extends AbstractElement
     }
 
     /**
-     * Set Paragraph style
+     * Set Paragraph style.
      *
-     * @param   string|array|\PhpOffice\PhpWord\Style\Paragraph $style
-     * @return  string|\PhpOffice\PhpWord\Style\Paragraph
+     * @param   array|Paragraph|string $style
+     *
+     * @return  Paragraph|string
      */
     public function setParagraphStyle($style = null)
     {
@@ -109,9 +112,9 @@ class TextBreak extends AbstractElement
     }
 
     /**
-     * Get Paragraph style
+     * Get Paragraph style.
      *
-     * @return string|\PhpOffice\PhpWord\Style\Paragraph
+     * @return null|Paragraph|string
      */
     public function getParagraphStyle()
     {
@@ -119,12 +122,12 @@ class TextBreak extends AbstractElement
     }
 
     /**
-     * Has font/paragraph style defined
+     * Has font/paragraph style defined.
      *
      * @return bool
      */
     public function hasStyle()
     {
-        return !is_null($this->fontStyle) || !is_null($this->paragraphStyle);
+        return null !== $this->fontStyle || null !== $this->paragraphStyle;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -22,19 +23,19 @@ use PhpOffice\PhpWord\Shared\XMLWriter;
 use PhpOffice\PhpWord\Writer\Word2007\Element\Container;
 
 /**
- * Word2007 comments part writer: word/comments.xml
+ * Word2007 comments part writer: word/comments.xml.
  */
 class Comments extends AbstractPart
 {
     /**
-     * Comments collection to be written
+     * Comments collection to be written.
      *
-     * @var \PhpOffice\PhpWord\Element\Comment[]
+     * @var Comment[]
      */
     protected $elements;
 
     /**
-     * Write part
+     * Write part.
      *
      * @return string
      */
@@ -69,11 +70,8 @@ class Comments extends AbstractPart
 
     /**
      * Write comment item.
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
-     * @param \PhpOffice\PhpWord\Element\Comment $comment
      */
-    protected function writeComment(XMLWriter $xmlWriter, Comment $comment)
+    protected function writeComment(XMLWriter $xmlWriter, Comment $comment): void
     {
         $xmlWriter->startElement('w:comment');
         $xmlWriter->writeAttribute('w:id', $comment->getElementId());
@@ -90,9 +88,10 @@ class Comments extends AbstractPart
     }
 
     /**
-     * Set element
+     * Set element.
      *
-     * @param \PhpOffice\PhpWord\Element\Comment[] $elements
+     * @param Comment[] $elements
+     *
      * @return self
      */
     public function setElements($elements)

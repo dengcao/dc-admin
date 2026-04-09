@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -24,96 +25,95 @@ use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\Shared\ZipArchive;
 
 /**
- * Abstract writer class
+ * Abstract writer class.
  *
  * @since 0.10.0
  */
 abstract class AbstractWriter implements WriterInterface
 {
     /**
-     * PHPWord object
+     * PHPWord object.
      *
-     * @var \PhpOffice\PhpWord\PhpWord
+     * @var PhpWord
      */
-    protected $phpWord = null;
+    protected $phpWord;
 
     /**
-     * Part name and file name pairs
-     *
-     * @var array
-     */
-    protected $parts = array();
-
-    /**
-     * Individual writers
+     * Part name and file name pairs.
      *
      * @var array
      */
-    protected $writerParts = array();
+    protected $parts = [];
 
     /**
-     * Paths to store media files
+     * Individual writers.
      *
      * @var array
      */
-    protected $mediaPaths = array('image' => '', 'object' => '');
+    protected $writerParts = [];
 
     /**
-     * Use disk caching
+     * Paths to store media files.
+     *
+     * @var array
+     */
+    protected $mediaPaths = ['image' => '', 'object' => ''];
+
+    /**
+     * Use disk caching.
      *
      * @var bool
      */
     private $useDiskCaching = false;
 
     /**
-     * Disk caching directory
+     * Disk caching directory.
      *
      * @var string
      */
     private $diskCachingDirectory = './';
 
     /**
-     * Temporary directory
+     * Temporary directory.
      *
      * @var string
      */
     private $tempDir = '';
 
     /**
-     * Original file name
+     * Original file name.
      *
      * @var string
      */
     private $originalFilename;
 
     /**
-     * Temporary file name
+     * Temporary file name.
      *
      * @var string
      */
     private $tempFilename;
 
     /**
-     * Get PhpWord object
+     * Get PhpWord object.
      *
-     * @throws \PhpOffice\PhpWord\Exception\Exception
-     * @return \PhpOffice\PhpWord\PhpWord
+     * @return PhpWord
      */
     public function getPhpWord()
     {
-        if (!is_null($this->phpWord)) {
+        if (null !== $this->phpWord) {
             return $this->phpWord;
         }
+
         throw new Exception('No PhpWord assigned.');
     }
 
     /**
-     * Set PhpWord object
+     * Set PhpWord object.
      *
-     * @param \PhpOffice\PhpWord\PhpWord
      * @return self
      */
-    public function setPhpWord(PhpWord $phpWord = null)
+    public function setPhpWord(?PhpWord $phpWord = null)
     {
         $this->phpWord = $phpWord;
 
@@ -121,9 +121,10 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get writer part
+     * Get writer part.
      *
      * @param string $partName Writer part name
+     *
      * @return mixed
      */
     public function getWriterPart($partName = '')
@@ -136,7 +137,7 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get use disk caching status
+     * Get use disk caching status.
      *
      * @return bool
      */
@@ -146,19 +147,18 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Set use disk caching status
+     * Set use disk caching status.
      *
      * @param bool $value
      * @param string $directory
      *
-     * @throws \PhpOffice\PhpWord\Exception\Exception
      * @return self
      */
     public function setUseDiskCaching($value = false, $directory = null)
     {
         $this->useDiskCaching = $value;
 
-        if (!is_null($directory)) {
+        if (null !== $directory) {
             if (is_dir($directory)) {
                 $this->diskCachingDirectory = $directory;
             } else {
@@ -170,7 +170,7 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get disk caching directory
+     * Get disk caching directory.
      *
      * @return string
      */
@@ -180,7 +180,7 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get temporary directory
+     * Get temporary directory.
      *
      * @return string
      */
@@ -190,9 +190,10 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Set temporary directory
+     * Set temporary directory.
      *
      * @param string $value
+     *
      * @return self
      */
     public function setTempDir($value)
@@ -206,11 +207,12 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get temporary file name
+     * Get temporary file name.
      *
      * If $filename is php://output or php://stdout, make it a temporary file
      *
      * @param string $filename
+     *
      * @return string
      */
     protected function getTempFile($filename)
@@ -233,10 +235,8 @@ abstract class AbstractWriter implements WriterInterface
 
     /**
      * Cleanup temporary file.
-     *
-     * @throws \PhpOffice\PhpWord\Exception\CopyFileException
      */
-    protected function cleanupTempFile()
+    protected function cleanupTempFile(): void
     {
         if ($this->originalFilename != $this->tempFilename) {
             // @codeCoverageIgnoreStart
@@ -254,7 +254,7 @@ abstract class AbstractWriter implements WriterInterface
     /**
      * Clear temporary directory.
      */
-    protected function clearTempDir()
+    protected function clearTempDir(): void
     {
         if (is_dir($this->tempDir)) {
             $this->deleteDir($this->tempDir);
@@ -262,13 +262,11 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Get ZipArchive object
+     * Get ZipArchive object.
      *
      * @param string $filename
      *
-     * @throws \Exception
-     *
-     * @return \PhpOffice\PhpWord\Shared\ZipArchive
+     * @return ZipArchive
      */
     protected function getZipArchive($filename)
     {
@@ -293,20 +291,18 @@ abstract class AbstractWriter implements WriterInterface
     }
 
     /**
-     * Open file for writing
+     * Open file for writing.
      *
      * @since 0.11.0
      *
      * @param string $filename
-     *
-     * @throws \Exception
      *
      * @return resource
      */
     protected function openFile($filename)
     {
         $filename = $this->getTempFile($filename);
-        $fileHandle = fopen($filename, 'w');
+        $fileHandle = fopen($filename, 'wb');
         // @codeCoverageIgnoreStart
         // Can't find any test case. Uncomment when found.
         if ($fileHandle === false) {
@@ -325,7 +321,7 @@ abstract class AbstractWriter implements WriterInterface
      * @param resource $fileHandle
      * @param string $content
      */
-    protected function writeFile($fileHandle, $content)
+    protected function writeFile($fileHandle, $content): void
     {
         fwrite($fileHandle, $content);
         fclose($fileHandle);
@@ -335,10 +331,9 @@ abstract class AbstractWriter implements WriterInterface
     /**
      * Add files to package.
      *
-     * @param \PhpOffice\PhpWord\Shared\ZipArchive $zip
      * @param mixed $elements
      */
-    protected function addFilesToPackage(ZipArchive $zip, $elements)
+    protected function addFilesToPackage(ZipArchive $zip, $elements): void
     {
         foreach ($elements as $element) {
             $type = $element['type']; // image|object|link
@@ -351,17 +346,8 @@ abstract class AbstractWriter implements WriterInterface
 
             // Retrive GD image content or get local media
             if (isset($element['isMemImage']) && $element['isMemImage']) {
-                $image = call_user_func($element['createFunction'], $element['source']);
-                if ($element['imageType'] === 'image/png') {
-                    // PNG images need to preserve alpha channel information
-                    imagesavealpha($image, true);
-                }
-                ob_start();
-                call_user_func($element['imageFunction'], $image);
-                $imageContents = ob_get_contents();
-                ob_end_clean();
+                $imageContents = $element['imageString'];
                 $zip->addFromString($target, $imageContents);
-                imagedestroy($image);
             } else {
                 $this->addFileToPackage($zip, $element['source'], $target);
             }
@@ -373,17 +359,17 @@ abstract class AbstractWriter implements WriterInterface
      *
      * Get the actual source from an archive image.
      *
-     * @param \PhpOffice\PhpWord\Shared\ZipArchive $zipPackage
+     * @param ZipArchive $zipPackage
      * @param string $source
      * @param string $target
      */
-    protected function addFileToPackage($zipPackage, $source, $target)
+    protected function addFileToPackage($zipPackage, $source, $target): void
     {
         $isArchive = strpos($source, 'zip://') !== false;
         $actualSource = null;
         if ($isArchive) {
             $source = substr($source, 6);
-            list($zipFilename, $imageFilename) = explode('#', $source);
+            [$zipFilename, $imageFilename] = explode('#', $source);
 
             $zip = new ZipArchive();
             if ($zip->open($zipFilename) !== false) {
@@ -397,7 +383,7 @@ abstract class AbstractWriter implements WriterInterface
             $actualSource = $source;
         }
 
-        if (!is_null($actualSource)) {
+        if (null !== $actualSource) {
             $zipPackage->addFile($actualSource, $target);
         }
     }
@@ -407,7 +393,7 @@ abstract class AbstractWriter implements WriterInterface
      *
      * @param string $dir
      */
-    private function deleteDir($dir)
+    private function deleteDir($dir): void
     {
         foreach (scandir($dir) as $file) {
             if ($file === '.' || $file === '..') {
@@ -420,17 +406,5 @@ abstract class AbstractWriter implements WriterInterface
         }
 
         rmdir($dir);
-    }
-
-    /**
-     * Get use disk caching status
-     *
-     * @deprecated 0.10.0
-     *
-     * @codeCoverageIgnore
-     */
-    public function getUseDiskCaching()
-    {
-        return $this->isUseDiskCaching();
     }
 }

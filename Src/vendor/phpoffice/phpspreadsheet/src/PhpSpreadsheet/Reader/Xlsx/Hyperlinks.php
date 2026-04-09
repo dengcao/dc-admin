@@ -9,11 +9,10 @@ use SimpleXMLElement;
 
 class Hyperlinks
 {
-    /** @var Worksheet */
-    private $worksheet;
+    private Worksheet $worksheet;
 
-    /** @var array */
-    private $hyperlinks = [];
+    /** @var string[] */
+    private array $hyperlinks = [];
 
     public function __construct(Worksheet $workSheet)
     {
@@ -33,9 +32,7 @@ class Hyperlinks
     public function setHyperlinks(SimpleXMLElement $worksheetXml): void
     {
         foreach ($worksheetXml->children(Namespaces::MAIN)->hyperlink as $hyperlink) {
-            if ($hyperlink !== null) {
-                $this->setHyperlink($hyperlink, $this->worksheet);
-            }
+            $this->setHyperlink($hyperlink, $this->worksheet);
         }
     }
 
@@ -47,19 +44,20 @@ class Hyperlinks
         $attributes = Xlsx::getAttributes($hyperlink);
         foreach (Coordinate::extractAllCellReferencesInRange($attributes->ref) as $cellReference) {
             $cell = $worksheet->getCell($cellReference);
-            if (isset($linkRel['id'])) {
-                $hyperlinkUrl = $this->hyperlinks[(string) $linkRel['id']] ?? null;
-                if (isset($attributes['location'])) {
-                    $hyperlinkUrl .= '#' . (string) $attributes['location'];
-                }
-                $cell->getHyperlink()->setUrl($hyperlinkUrl);
-            } elseif (isset($attributes['location'])) {
+            if (isset($attributes['location'])) {
                 $cell->getHyperlink()->setUrl('sheet://' . (string) $attributes['location']);
+            } elseif (isset($linkRel['id'])) {
+                $hyperlinkUrl = $this->hyperlinks[(string) $linkRel['id']] ?? '';
+                $cell->getHyperlink()->setUrl($hyperlinkUrl);
             }
 
             // Tooltip
             if (isset($attributes['tooltip'])) {
                 $cell->getHyperlink()->setTooltip((string) $attributes['tooltip']);
+            }
+
+            if (isset($attributes['display'])) {
+                $cell->getHyperlink()->setDisplay((string) $attributes['display']);
             }
         }
     }

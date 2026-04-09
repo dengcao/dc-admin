@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -14,6 +14,7 @@ namespace think;
 
 use ReflectionClass;
 use ReflectionMethod;
+use think\helper\Str;
 
 /**
  * 事件管理类
@@ -26,6 +27,12 @@ class Event
      * @var array
      */
     protected $listener = [];
+
+    /**
+     * 观察者
+     * @var array
+     */
+    protected $observer = [];
 
     /**
      * 事件别名
@@ -144,9 +151,9 @@ class Event
      */
     public function subscribe($subscriber)
     {
-        $subscribers = (array) $subscriber;
+        $subscribers = is_object($subscriber) ? [$subscriber] : (array) $subscriber;
 
-        foreach ($subscribers as $subscriber) {
+        foreach ($subscribers as $name => $subscriber) {
             if (is_string($subscriber)) {
                 $subscriber = $this->app->make($subscriber);
             }
@@ -154,6 +161,9 @@ class Event
             if (method_exists($subscriber, 'subscribe')) {
                 // 手动订阅
                 $subscriber->subscribe($this);
+            } elseif (!is_numeric($name)) {
+                // 注册观察者
+                $this->observer[$name] = $subscriber;
             } else {
                 // 智能订阅
                 $this->observe($subscriber);
@@ -164,7 +174,7 @@ class Event
     }
 
     /**
-     * 自动注册事件观察者
+     * 自动注册事件监听
      * @access public
      * @param string|object $observer 观察者
      * @param null|string   $prefix   事件名前缀
@@ -181,13 +191,18 @@ class Event
 
         if (empty($prefix) && $reflect->hasProperty('eventPrefix')) {
             $reflectProperty = $reflect->getProperty('eventPrefix');
-            $reflectProperty->setAccessible(true);
+
+            if (PHP_VERSION_ID < 80100) {
+                // 8.0 版本时调用
+                $reflectProperty->setAccessible(true);
+            }
+
             $prefix = $reflectProperty->getValue($observer);
         }
 
         foreach ($methods as $method) {
             $name = $method->getName();
-            if (0 === strpos($name, 'on')) {
+            if (str_starts_with($name, 'on')) {
                 $this->listen($prefix . substr($name, 2), [$observer, $name]);
             }
         }
@@ -207,7 +222,7 @@ class Event
     {
         if (is_object($event)) {
             $params = $event;
-            $event  = get_class($event);
+            $event  = $event::class;
         }
 
         if (isset($this->bind[$event])) {
@@ -217,10 +232,20 @@ class Event
         $result    = [];
         $listeners = $this->listener[$event] ?? [];
 
-        if (strpos($event, '.')) {
-            [$prefix, $event] = explode('.', $event, 2);
-            if (isset($this->listener[$prefix . '.*'])) {
-                $listeners = array_merge($listeners, $this->listener[$prefix . '.*']);
+        if (str_contains($event, '.')) {
+            [$prefix, $name] = explode('.', $event, 2);
+            if (isset($this->observer[$prefix])) {
+                // 检查观察者事件响应方法
+                $observer = $this->observer[$prefix];
+                $method   = 'on' . Str::studly($name);
+                if (method_exists($observer, $method)) {
+                    return $this->dispatch([$observer, $method], $params);
+                }
+            }
+
+            $name = substr($event, 0, strrpos($event, '.'));
+            if (isset($this->listener[$name . '.*'])) {
+                $listeners = array_merge($listeners, $this->listener[$name . '.*']);
             }
         }
 
@@ -259,7 +284,7 @@ class Event
     {
         if (!is_string($event)) {
             $call = $event;
-        } elseif (strpos($event, '::')) {
+        } elseif (str_contains($event, '::')) {
             $call = $event;
         } else {
             $obj  = $this->app->make($event);
@@ -268,5 +293,4 @@ class Event
 
         return $this->app->invoke($call, [$params]);
     }
-
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,23 +12,24 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Shared;
 
 /**
- * Drawing
+ * Drawing.
  */
 class Drawing
 {
     const DPI_96 = 96;
 
     /**
-     * Convert pixels to EMU
+     * Convert pixels to EMU.
      *
      * @param  int $pValue Value in pixels
+     *
      * @return int
      */
     public static function pixelsToEmu($pValue = 0)
@@ -36,9 +38,10 @@ class Drawing
     }
 
     /**
-     * Convert EMU to pixels
+     * Convert EMU to pixels.
      *
      * @param  int $pValue Value in EMU
+     *
      * @return int
      */
     public static function emuToPixels($pValue = 0)
@@ -51,9 +54,10 @@ class Drawing
     }
 
     /**
-     * Convert pixels to points
+     * Convert pixels to points.
      *
      * @param  int $pValue Value in pixels
+     *
      * @return float
      */
     public static function pixelsToPoints($pValue = 0)
@@ -62,9 +66,10 @@ class Drawing
     }
 
     /**
-     * Convert points width to centimeters
+     * Convert points width to centimeters.
      *
      * @param  int $pValue Value in points
+     *
      * @return float
      */
     public static function pointsToCentimeters($pValue = 0)
@@ -77,9 +82,10 @@ class Drawing
     }
 
     /**
-     * Convert points width to pixels
+     * Convert points width to pixels.
      *
      * @param  int $pValue Value in points
+     *
      * @return float
      */
     public static function pointsToPixels($pValue = 0)
@@ -92,9 +98,10 @@ class Drawing
     }
 
     /**
-     * Convert pixels to centimeters
+     * Convert pixels to centimeters.
      *
      * @param  int $pValue Value in pixels
+     *
      * @return float
      */
     public static function pixelsToCentimeters($pValue = 0)
@@ -104,9 +111,10 @@ class Drawing
     }
 
     /**
-     * Convert centimeters width to pixels
+     * Convert centimeters width to pixels.
      *
      * @param  int $pValue Value in centimeters
+     *
      * @return float
      */
     public static function centimetersToPixels($pValue = 0)
@@ -119,9 +127,10 @@ class Drawing
     }
 
     /**
-     * Convert degrees to angle
+     * Convert degrees to angle.
      *
      * @param  int $pValue Degrees
+     *
      * @return int
      */
     public static function degreesToAngle($pValue = 0)
@@ -130,9 +139,10 @@ class Drawing
     }
 
     /**
-     * Convert angle to degrees
+     * Convert angle to degrees.
      *
      * @param  int $pValue Angle
+     *
      * @return int
      */
     public static function angleToDegrees($pValue = 0)
@@ -145,9 +155,10 @@ class Drawing
     }
 
     /**
-     * Convert centimeters width to twips
+     * Convert centimeters width to twips.
      *
      * @param int $pValue
+     *
      * @return float
      */
     public static function centimetersToTwips($pValue = 0)
@@ -160,9 +171,10 @@ class Drawing
     }
 
     /**
-     * Convert twips width to centimeters
+     * Convert twips width to centimeters.
      *
      * @param int $pValue
+     *
      * @return float
      */
     public static function twipsToCentimeters($pValue = 0)
@@ -175,9 +187,10 @@ class Drawing
     }
 
     /**
-     * Convert inches width to twips
+     * Convert inches width to twips.
      *
      * @param int $pValue
+     *
      * @return float
      */
     public static function inchesToTwips($pValue = 0)
@@ -190,9 +203,10 @@ class Drawing
     }
 
     /**
-     * Convert twips width to inches
+     * Convert twips width to inches.
      *
      * @param int $pValue
+     *
      * @return float
      */
     public static function twipsToInches($pValue = 0)
@@ -205,9 +219,10 @@ class Drawing
     }
 
     /**
-     * Convert twips width to pixels
+     * Convert twips width to pixels.
      *
      * @param int $pValue
+     *
      * @return float
      */
     public static function twipsToPixels($pValue = 0)
@@ -220,9 +235,10 @@ class Drawing
     }
 
     /**
-     * Convert HTML hexadecimal to RGB
+     * Convert HTML hexadecimal to RGB.
      *
      * @param string $pValue HTML Color in hexadecimal
+     *
      * @return array|false Value in RGB
      */
     public static function htmlToRGB($pValue)
@@ -232,9 +248,9 @@ class Drawing
         }
 
         if (strlen($pValue) == 6) {
-            list($colorR, $colorG, $colorB) = array($pValue[0] . $pValue[1], $pValue[2] . $pValue[3], $pValue[4] . $pValue[5]);
+            [$colorR, $colorG, $colorB] = [$pValue[0] . $pValue[1], $pValue[2] . $pValue[3], $pValue[4] . $pValue[5]];
         } elseif (strlen($pValue) == 3) {
-            list($colorR, $colorG, $colorB) = array($pValue[0] . $pValue[0], $pValue[1] . $pValue[1], $pValue[2] . $pValue[2]);
+            [$colorR, $colorG, $colorB] = [$pValue[0] . $pValue[0], $pValue[1] . $pValue[1], $pValue[2] . $pValue[2]];
         } else {
             return false;
         }
@@ -243,6 +259,6 @@ class Drawing
         $colorG = hexdec($colorG);
         $colorB = hexdec($colorB);
 
-        return array($colorR, $colorG, $colorB);
+        return [$colorR, $colorG, $colorB];
     }
 }

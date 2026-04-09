@@ -22,7 +22,7 @@ class LogTest extends TestCase
         m::close();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->prepareApp();
 
@@ -64,42 +64,38 @@ class LogTest extends TestCase
 
         $this->config->shouldReceive('get')->with("log.default", null)->andReturn('file');
 
-        $this->config->shouldReceive('get')->with("log.channels.file", null)->andReturn(['type' => 'file', 'path' => $root->url()]);
+        $this->config->shouldReceive('get')->with("log.channels.file", null)
+            ->andReturn(['type' => 'file', 'path' => $root->url()]);
 
         $this->log->info('foo');
 
-        $this->assertEquals($this->log->getLog(), ['info' => ['foo']]);
+        $this->assertEquals([['info', 'foo']], array_map(fn($log) => [$log->type, $log->message], $this->log->getLog()));
 
         $this->log->clear();
 
         $this->assertEmpty($this->log->getLog());
 
         $this->log->error('foo');
-        $this->assertArrayHasKey('error', $this->log->getLog());
-
         $this->log->emergency('foo');
-        $this->assertArrayHasKey('emergency', $this->log->getLog());
-
         $this->log->alert('foo');
-        $this->assertArrayHasKey('alert', $this->log->getLog());
-
         $this->log->critical('foo');
-        $this->assertArrayHasKey('critical', $this->log->getLog());
-
         $this->log->warning('foo');
-        $this->assertArrayHasKey('warning', $this->log->getLog());
-
         $this->log->notice('foo');
-        $this->assertArrayHasKey('notice', $this->log->getLog());
-
         $this->log->debug('foo');
-        $this->assertArrayHasKey('debug', $this->log->getLog());
-
         $this->log->sql('foo');
-        $this->assertArrayHasKey('sql', $this->log->getLog());
-
         $this->log->custom('foo');
-        $this->assertArrayHasKey('custom', $this->log->getLog());
+
+        $this->assertEquals([
+            ['error', 'foo'],
+            ['emergency', 'foo'],
+            ['alert', 'foo'],
+            ['critical', 'foo'],
+            ['warning', 'foo'],
+            ['notice', 'foo'],
+            ['debug', 'foo'],
+            ['sql', 'foo'],
+            ['custom', 'foo'],
+        ], array_map(fn($log) => [$log->type, $log->message], $this->log->getLog()));
 
         $this->log->write('foo');
         $this->assertTrue($root->hasChildren());
@@ -118,7 +114,8 @@ class LogTest extends TestCase
 
         $this->config->shouldReceive('get')->with("log.default", null)->andReturn('file');
 
-        $this->config->shouldReceive('get')->with("log.channels.file", null)->andReturn(['type' => 'file', 'path' => $root->url()]);
+        $this->config->shouldReceive('get')->with("log.channels.file", null)
+            ->andReturn(['type' => 'file', 'path' => $root->url()]);
 
         $this->log->info('foo');
 

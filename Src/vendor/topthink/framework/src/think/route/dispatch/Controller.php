@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -12,9 +12,7 @@ declare (strict_types = 1);
 
 namespace think\route\dispatch;
 
-use ReflectionClass;
-use ReflectionException;
-use ReflectionMethod;
+use Closure;
 use think\App;
 use think\exception\ClassNotFoundException;
 use think\exception\HttpException;
@@ -40,29 +38,46 @@ class Controller extends Dispatch
 
     public function init(App $app)
     {
-        parent::init($app);
+        $this->app = $app;
+        $this->parseDispatch();
+        $this->doRouteAfter();
+    }
 
-        $result = $this->dispatch;
-
-        if (is_string($result)) {
-            $result = explode('/', $result);
+    protected function parseDispatch()
+    {
+        $path = $this->dispatch;
+        if (is_string($path)) {
+            $path = explode('/', $path);
         }
 
-        // 获取控制器名
-        $controller = strip_tags($result[0] ?: $this->rule->config('default_controller'));
+        $action     = !empty($path) ? array_pop($path) : $this->rule->config('default_action');
+        $controller = !empty($path) ? array_pop($path) : $this->rule->config('default_controller');
+        $layer      = !empty($path) ? implode('/', $path) : '';
 
-        if (strpos($controller, '.')) {
-            $pos              = strrpos($controller, '.');
-            $this->controller = substr($controller, 0, $pos) . '.' . Str::studly(substr($controller, $pos + 1));
+        if ($layer && !empty($this->option['auto_middleware'])) {
+            // 自动为顶层layer注册中间件
+            $alias = $this->app->config->get('middleware.alias', []);
+
+            if (isset($alias[$layer])) {
+                $this->option['middleware'] = array_merge($this->option['middleware'] ?? [], [$layer]);
+            }
+        }
+
+        // 获取控制器名和分层（目录）名
+        if (str_contains($controller, '.')) {
+            $pos        = strrpos($controller, '.');
+            $layer      = ($layer ? $layer . '.' : '') . substr($controller, 0, $pos);
+            $controller = Str::studly(substr($controller, $pos + 1));
         } else {
-            $this->controller = Str::studly($controller);
+            $controller = Str::studly($controller);
         }
 
-        // 获取操作名
-        $this->actionName = strip_tags($result[1] ?: $this->rule->config('default_action'));
+        $this->actionName = strip_tags($action);
+        $this->controller = strip_tags(($layer ? $layer . '.' : '') . $controller);
 
         // 设置当前请求的控制器、操作
         $this->request
+            ->setLayer(strip_tags($layer))
             ->setController($this->controller)
             ->setAction($this->actionName);
     }
@@ -72,99 +87,29 @@ class Controller extends Dispatch
         try {
             // 实例化控制器
             $instance = $this->controller($this->controller);
+            if ($this->miss && !method_exists($instance, $this->actionName . $this->rule->config('action_suffix'))) {
+                throw new ClassNotFoundException('class not exists:');
+            }
         } catch (ClassNotFoundException $e) {
-            throw new HttpException(404, 'controller not exists:' . $e->getClass());
-        }
-
-        // 注册控制器中间件
-        $this->registerControllerMiddleware($instance);
-
-        return $this->app->middleware->pipeline('controller')
-            ->send($this->request)
-            ->then(function () use ($instance) {
-                // 获取当前操作名
-                $suffix = $this->rule->config('action_suffix');
-                $action = $this->actionName . $suffix;
-
-                if (is_callable([$instance, $action])) {
-                    $vars = $this->request->param();
-                    try {
-                        $reflect = new ReflectionMethod($instance, $action);
-                        // 严格获取当前操作方法名
-                        $actionName = $reflect->getName();
-                        if ($suffix) {
-                            $actionName = substr($actionName, 0, -strlen($suffix));
-                        }
-
-                        $this->request->setAction($actionName);
-                    } catch (ReflectionException $e) {
-                        $reflect = new ReflectionMethod($instance, '__call');
-                        $vars    = [$action, $vars];
-                        $this->request->setAction($action);
-                    }
-                } else {
-                    // 操作不存在
-                    throw new HttpException(404, 'method not exists:' . get_class($instance) . '->' . $action . '()');
+            if ($this->miss) {
+                $route = $this->miss->getRoute();
+                if ($route instanceof Closure) {
+                    $vars = $this->getActionBindVars();
+                    return $this->app->invoke($route, $vars);
                 }
-
-                $data = $this->app->invokeReflectMethod($instance, $reflect, $vars);
-
-                return $this->autoResponse($data);
-            });
-    }
-
-    protected function parseActions($actions)
-    {
-        return array_map(function ($item) {
-            return strtolower($item);
-        }, is_string($actions) ? explode(",", $actions) : $actions);
-    }
-
-    /**
-     * 使用反射机制注册控制器中间件
-     * @access public
-     * @param object $controller 控制器实例
-     * @return void
-     */
-    protected function registerControllerMiddleware($controller): void
-    {
-        $class = new ReflectionClass($controller);
-
-        if ($class->hasProperty('middleware')) {
-            $reflectionProperty = $class->getProperty('middleware');
-            $reflectionProperty->setAccessible(true);
-
-            $middlewares = $reflectionProperty->getValue($controller);
-            $action      = $this->request->action(true);
-
-            foreach ($middlewares as $key => $val) {
-                if (!is_int($key)) {
-                    $middleware = $key;
-                    $options    = $val;
-                } elseif (isset($val['middleware'])) {
-                    $middleware = $val['middleware'];
-                    $options    = $val['options'] ?? [];
-                } else {
-                    $middleware = $val;
-                    $options    = [];
+                // 检查分组绑定
+                $prefix = $this->rule->getOption('prefix');
+                if (!str_starts_with($route, $prefix)) {
+                    $route = $prefix . $route;
                 }
-
-                if (isset($options['only']) && !in_array($action, $this->parseActions($options['only']))) {
-                    continue;
-                } elseif (isset($options['except']) && in_array($action, $this->parseActions($options['except']))) {
-                    continue;
-                }
-
-                if (is_string($middleware) && strpos($middleware, ':')) {
-                    $middleware = explode(':', $middleware);
-                    if (count($middleware) > 1) {
-                        $middleware = [$middleware[0], array_slice($middleware, 1)];
-                    }
-                }
-
-                $this->app->middleware->controller($middleware);
+                $this->parseDispatch($route);
+                $instance = $this->controller($this->controller);
+            } else {
+                throw new HttpException(404, 'controller not exists:' . $e->getClass());
             }
         }
+
+        return $this->responseWithMiddlewarePipeline($instance, $this->actionName);
     }
 
     /**

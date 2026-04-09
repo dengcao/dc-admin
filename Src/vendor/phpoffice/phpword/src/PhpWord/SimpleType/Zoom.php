@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -20,10 +21,9 @@ namespace PhpOffice\PhpWord\SimpleType;
 use PhpOffice\PhpWord\Shared\AbstractEnum;
 
 /**
- * Magnification Preset Values
+ * Magnification Preset Values.
  *
  * @since 0.14.0
- *
  * @see http://www.datypic.com/sc/ooxml/t-w_ST_Zoom.html
  */
 final class Zoom extends AbstractEnum

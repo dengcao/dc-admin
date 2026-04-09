@@ -1,10 +1,10 @@
 <?php
 /**
- * 源码名：caozha-admin
+ * 源码名：dc-admin
  * Copyright © 邓草 （官网：http://blog.5300.cn）
  * 基于木兰宽松许可证 2.0（Mulan PSL v2）免费开源，您可以自由复制、修改、分发或用于商业用途，但需保留作者版权等声明。详见开源协议：http://license.coscl.org.cn/MulanPSL2
- * caozha-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
- * Github：https://github.com/dengcao/caozha-admin   or   Gitee：https://gitee.com/dengzhenhua/caozha-admin
+ * dc-admin (Software Name) is licensed under Mulan PSL v2. Please refer to: http://license.coscl.org.cn/MulanPSL2
+ * Github：https://github.com/dengcao/dc-admin   or   Gitee：https://gitee.com/dengzhenhua/dc-admin
  */
 
 namespace app\admin\controller;
@@ -18,11 +18,11 @@ use app\admin\model\Article as ArticleModel;
 class Article
 {
     protected $middleware = [
-        'caozha_auth' 	=> ['except' => '' ],//验证是否管理员
+        'dengcao_auth' 	=> ['except' => '' ],//验证是否管理员
     ];
 
     public function __construct(){
-        cz_auth("article");//检测是否有权限
+        dc_auth("article");//检测是否有权限
     }
 
     public function index()
@@ -49,7 +49,7 @@ class Article
         $tree->init($categorys);
         $source_string .= $tree->get_tree(0, $str);
 
-        $article_status = Config::get("app.caozha_article_status");
+        $article_status = Config::get("app.dengcao_article_status");
 
         View::assign([
             'article_limit'  => $limit,
@@ -78,7 +78,7 @@ class Article
         $tree->init($categorys);
         $source_string .= $tree->get_tree(0, $str);
 
-        $article_status = Config::get("app.caozha_article_status");
+        $article_status = Config::get("app.dengcao_article_status");
 
         View::assign([
             'article_status' => $article_status,
@@ -116,11 +116,11 @@ class Article
     {
         $aid=Request::param("aid",'','filter_sql');
         if(!is_numeric($aid)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $article=ArticleModel::where("aid","=",$aid)->findOrEmpty();
         if ($article->isEmpty()) {
-            caozha_error("[ID:".$aid."]文章不存在。","",1);
+            dengcao_error("[ID:".$aid."]文章不存在。","",1);
         }
 
         $tree = new Tree;
@@ -139,7 +139,7 @@ class Article
         $tree->init($categorys);
         $source_string .= $tree->get_tree(0, $str, $article->catid);
 
-        $article_status = Config::get("app.caozha_article_status");
+        $article_status = Config::get("app.dengcao_article_status");
 
         View::assign([
             'article_status' => $article_status,
@@ -159,7 +159,7 @@ class Article
         }
         $update_data=Request::param('','','filter_sql');//过滤注入
         if(!is_numeric($update_data["aid"])){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
 
         $update_data["islink"]=isset($update_data["islink"])?$update_data["islink"]:0;
@@ -189,11 +189,11 @@ class Article
     {
         $aid=Request::param("aid",'','filter_sql');
         if(!is_numeric($aid)){
-            caozha_error("参数错误","",1);
+            dengcao_error("参数错误","",1);
         }
         $article=ArticleModel::where("aid","=",$aid)->with('category')->withAttr('status', function($value) {
             //$status = [0=>'无效',1=>'在审',2=>'<font color="red">退稿</font>,9=>\'<font color="green">通过</font>\''];
-            $status = Config::get("app.caozha_article_status");
+            $status = Config::get("app.dengcao_article_status");
             return $status[$value];
         })->withAttr('islink', function($value) {
             $islink = [0=>'否',1=>'是'];
@@ -212,7 +212,7 @@ class Article
             return $islink[$value];
         })->findOrEmpty();
         if ($article->isEmpty()) {
-            caozha_error("[ID:".$aid."]文章不存在。","",1);
+            dengcao_error("[ID:".$aid."]文章不存在。","",1);
         }else{
             View::assign([
                 'article'  => $article
@@ -239,7 +239,7 @@ class Article
         $list=$list->alias('a')->leftJoin('category c','a.catid = c.catid');
         $list=$list->alias('a')->field('a.*,c.catname');
         $list=$list->withAttr('status', function($value) {
-            $status = Config::get("app.caozha_article_status");
+            $status = Config::get("app.dengcao_article_status");
             return $status[$value];
         })->withAttr('islink', function($value) {
             $islink = [0=>'否',1=>'是'];

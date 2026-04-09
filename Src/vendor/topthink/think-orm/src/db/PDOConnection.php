@@ -1,14 +1,15 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace think\db;
 
@@ -18,11 +19,13 @@ use PDOStatement;
 use think\db\exception\BindParamException;
 use think\db\exception\DbEventException;
 use think\db\exception\DbException;
+use think\db\exception\DuplicateException;
 use think\db\exception\PDOException;
-use think\Model;
+use think\model\contract\Modelable as Model;
 
 /**
- * 数据库连接基础类
+ * 数据库连接基础类.
+ *
  * @property PDO[] $links
  * @property PDO   $linkID
  * @property PDO   $linkRead
@@ -30,10 +33,9 @@ use think\Model;
  */
 abstract class PDOConnection extends Connection
 {
-    const PARAM_FLOAT = 21;
-
     /**
-     * 数据库连接参数配置
+     * 数据库连接参数配置.
+     *
      * @var array
      */
     protected $config = [
@@ -83,58 +85,69 @@ abstract class PDOConnection extends Connection
         'break_match_str' => [],
         // 自动参数绑定
         'auto_param_bind' => true,
+        // 数据库时区设置
+        'timezone'        => '',
     ];
 
     /**
-     * PDO操作实例
+     * PDO操作实例.
+     *
      * @var PDOStatement
      */
     protected $PDOStatement;
 
     /**
-     * 当前SQL指令
+     * 当前SQL指令.
+     *
      * @var string
      */
     protected $queryStr = '';
 
     /**
-     * 事务指令数
+     * 事务指令数.
+     *
      * @var int
      */
     protected $transTimes = 0;
 
     /**
-     * 重连次数
+     * 重连次数.
+     *
      * @var int
      */
     protected $reConnectTimes = 0;
 
     /**
-     * 查询结果类型
+     * 查询结果类型.
+     *
      * @var int
      */
     protected $fetchType = PDO::FETCH_ASSOC;
 
     /**
-     * 字段属性大小写
+     * 字段属性大小写.
+     *
      * @var int
      */
     protected $attrCase = PDO::CASE_LOWER;
 
     /**
-     * 数据表信息
+     * 数据表信息.
+     *
      * @var array
      */
     protected $info = [];
 
     /**
-     * 查询开始时间
+     * 查询开始时间.
+     *
      * @var float
      */
     protected $queryStartTime;
 
     /**
-     * PDO连接参数
+     * PDO连接参数.
+     *
      * @var array
      */
     protected $params = [
@@ -146,23 +159,29 @@ abstract class PDOConnection extends Connection
     ];
 
     /**
-     * 参数绑定类型映射
+     * 参数绑定类型映射.
+     *
      * @var array
      */
     protected $bindType = [
-        'string'    => PDO::PARAM_STR,
-        'str'       => PDO::PARAM_STR,
-        'integer'   => PDO::PARAM_INT,
-        'int'       => PDO::PARAM_INT,
-        'boolean'   => PDO::PARAM_BOOL,
-        'bool'      => PDO::PARAM_BOOL,
+        'string'    => self::PARAM_STR,
+        'str'       => self::PARAM_STR,
+        'bigint'    => self::PARAM_STR,
+        'set'       => self::PARAM_STR,
+        'enum'      => self::PARAM_STR,
+        'integer'   => self::PARAM_INT,
+        'int'       => self::PARAM_INT,
+        'boolean'   => self::PARAM_BOOL,
+        'bool'      => self::PARAM_BOOL,
         'float'     => self::PARAM_FLOAT,
-        'datetime'  => PDO::PARAM_STR,
-        'timestamp' => PDO::PARAM_STR,
+        'datetime'  => self::PARAM_STR,
+        'date'      => self::PARAM_STR,
+        'timestamp' => self::PARAM_STR,
     ];
 
     /**
-     * 服务器断线标识字符
+     * 服务器断线标识字符.
+     *
      * @var array
      */
     protected $breakMatchStr = [
@@ -200,14 +219,15 @@ abstract class PDOConnection extends Connection
     ];
 
     /**
-     * 绑定参数
+     * 绑定参数.
+     *
      * @var array
      */
     protected $bind = [];
 
     /**
-     * 获取当前连接器类对应的Query类
-     * @access public
+     * 获取当前连接器类对应的Query类.
+     *
      * @return string
      */
     public function getQueryClass(): string
@@ -216,8 +236,8 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取当前连接器类对应的Builder类
-     * @access public
+     * 获取当前连接器类对应的Builder类.
+     *
      * @return string
      */
     public function getBuilderClass(): string
@@ -226,180 +246,181 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 解析pdo连接的dsn信息
-     * @access protected
+     * 解析pdo连接的dsn信息.
+     *
      * @param array $config 连接信息
+     *
      * @return string
      */
     abstract protected function parseDsn(array $config): string;
 
     /**
-     * 取得数据表的字段信息
-     * @access public
+     * 取得数据表的字段信息.
+     *
      * @param string $tableName 数据表名称
+     *
      * @return array
      */
     abstract public function getFields(string $tableName): array;
 
     /**
-     * 取得数据库的表信息
-     * @access public
+     * 取得数据库的表信息.
+     *
      * @param string $dbName 数据库名称
+     *
      * @return array
      */
     abstract public function getTables(string $dbName = ''): array;
 
     /**
-     * 对返数据表字段信息进行大小写转换出来
-     * @access public
+     * 对返数据表字段信息进行大小写转换出来.
+     *
      * @param array $info 字段信息
+     *
      * @return array
      */
     public function fieldCase(array $info): array
     {
         // 字段大小写转换
-        switch ($this->attrCase) {
-            case PDO::CASE_LOWER:
-                $info = array_change_key_case($info);
-                break;
-            case PDO::CASE_UPPER:
-                $info = array_change_key_case($info, CASE_UPPER);
-                break;
-            case PDO::CASE_NATURAL:
-            default:
-                // 不做转换
+        return match ($this->attrCase) {
+            PDO::CASE_LOWER => array_change_key_case($info),
+            PDO::CASE_UPPER => array_change_key_case($info, CASE_UPPER),
+            PDO::CASE_NATURAL => $info,
+            default => $info,
+        };
+    }
+
+    /**
+     * 获取字段类型.
+     *
+     * @param string $type 字段类型
+     *
+     * @return string
+     */
+    protected function getFieldType(string $type): string
+    {
+        // 将字段类型转换为小写以进行比较
+        $type = strtolower($type);
+
+        return match (true) {
+            str_starts_with($type, 'set')           => 'set',
+            str_starts_with($type, 'enum')          => 'enum',
+            str_starts_with($type, 'bigint')        => 'bigint',
+            str_contains($type, 'float') || str_contains($type, 'double') || 
+            str_contains($type, 'real')             => 'float',
+            str_contains($type, 'int') || str_contains($type, 'serial') ||
+            str_contains($type, 'bit')              => 'int',
+            str_contains($type, 'bool')             => 'bool',
+            str_contains($type, 'json')             => 'json',
+            str_starts_with($type, 'timestamp')     => 'timestamp',
+            str_starts_with($type, 'datetime')      => 'datetime',
+            str_starts_with($type, 'date')          => 'date',
+            default                                 => 'string',
+        };
+    }
+
+    /**
+     * 获取字段绑定类型.
+     *
+     * @param string $type 字段类型
+     *
+     * @return int
+     */
+    public function getFieldBindType(string $type): int
+    {
+        return $this->bindType[$type] ?? self::PARAM_STR;
+    }
+
+    /**
+     * 获取数据表信息缓存key.
+     *
+     * @param string $schema 数据表名称
+     *
+     * @return string
+     */
+    protected function getSchemaCacheKey(string $schema): string
+    {
+        $hostname = $this->getConfig('hostname');
+        return (is_array($hostname) ? $hostname[0] : $hostname) . '_' . $this->getConfig('hostport') . '|' . $schema;
+    }
+
+    /**
+     * @param string $tableName 数据表名称
+     * @param bool   $force     强制从数据库获取
+     *
+     * @return array
+     */
+    public function getSchemaInfo(string $tableName, bool $force = false): array
+    {
+        $schema = str_contains($tableName, '.') ? $tableName : $this->getConfig('database') . '.' . $tableName;
+
+        if (isset($this->info[$schema]) && !$force) {
+            return $this->info[$schema];
+        }
+
+        // 读取字段缓存
+        $cacheKey = $this->getSchemaCacheKey($schema);
+        $info     = $this->getCachedSchemaInfo($cacheKey, $tableName, $force);
+
+        $pk      = $info['_pk'] ?? null;
+        $autoinc = $info['_autoinc'] ?? null;
+        unset($info['_pk'], $info['_autoinc']);
+
+        $bind = array_map(fn($val) => $this->getFieldBindType($val), $info);
+
+        $this->info[$schema] = [
+            'fields'  => array_keys($info),
+            'type'    => $info,
+            'bind'    => $bind,
+            'pk'      => $pk,
+            'autoinc' => $autoinc,
+        ];
+
+        return $this->info[$schema];
+    }
+
+    /**
+     * @param string $cacheKey 缓存key
+     * @param string $tableName 数据表名称
+     * @param bool   $force     强制从数据库获取
+     *
+     * @return array
+     */
+    protected function getCachedSchemaInfo(string $cacheKey, string $tableName, bool $force): array
+    {
+        if ($this->config['fields_cache'] && !empty($this->cache) && !$force) {
+            $info = $this->cache->get($cacheKey);
+            if (!empty($info)) {
+                if (is_object($info)) {
+                    $info = get_object_vars($info);
+                }
+                return $info;
+            }
+        }
+
+        $info = $this->getTableFieldsInfo($tableName);
+        if (!empty($this->cache) && ($this->config['fields_cache'] || $force)) {
+            $this->cache->set($cacheKey, $info);
         }
 
         return $info;
     }
 
     /**
-     * 获取字段类型
-     * @access protected
-     * @param string $type 字段类型
-     * @return string
-     */
-    protected function getFieldType(string $type): string
-    {
-        if (0 === stripos($type, 'set') || 0 === stripos($type, 'enum')) {
-            $result = 'string';
-        } elseif (preg_match('/(double|float|decimal|real|numeric)/is', $type)) {
-            $result = 'float';
-        } elseif (preg_match('/(int|serial|bit)/is', $type)) {
-            $result = 'int';
-        } elseif (preg_match('/bool/is', $type)) {
-            $result = 'bool';
-        } elseif (0 === stripos($type, 'timestamp')) {
-            $result = 'timestamp';
-        } elseif (0 === stripos($type, 'datetime')) {
-            $result = 'datetime';
-        } elseif (0 === stripos($type, 'date')) {
-            $result = 'date';
-        } else {
-            $result = 'string';
-        }
-
-        return $result;
-    }
-
-    /**
-     * 获取字段绑定类型
-     * @access public
-     * @param string $type 字段类型
-     * @return integer
-     */
-    public function getFieldBindType(string $type): int
-    {
-        if (in_array($type, ['integer', 'string', 'float', 'boolean', 'bool', 'int', 'str'])) {
-            $bind = $this->bindType[$type];
-        } elseif (0 === strpos($type, 'set') || 0 === strpos($type, 'enum')) {
-            $bind = PDO::PARAM_STR;
-        } elseif (preg_match('/(double|float|decimal|real|numeric)/is', $type)) {
-            $bind = self::PARAM_FLOAT;
-        } elseif (preg_match('/(int|serial|bit)/is', $type)) {
-            $bind = PDO::PARAM_INT;
-        } elseif (preg_match('/bool/is', $type)) {
-            $bind = PDO::PARAM_BOOL;
-        } else {
-            $bind = PDO::PARAM_STR;
-        }
-
-        return $bind;
-    }
-
-    /**
-     * 获取数据表信息缓存key
-     * @access protected
-     * @param string $schema 数据表名称
-     * @return string
-     */
-    protected function getSchemaCacheKey(string $schema): string
-    {
-        return $this->getConfig('hostname') . ':' . $this->getConfig('hostport') . '@' . $schema;
-    }
-
-    /**
-     * @param string $tableName 数据表名称
-     * @param bool $force 强制从数据库获取
-     * @return array
-     */
-    public function getSchemaInfo(string $tableName, $force = false)
-    {
-        if (!strpos($tableName, '.')) {
-            $schema = $this->getConfig('database') . '.' . $tableName;
-        } else {
-            $schema = $tableName;
-        }
-
-        if (!isset($this->info[$schema]) || $force) {
-            // 读取字段缓存
-            $cacheKey   = $this->getSchemaCacheKey($schema);
-            if ($this->config['fields_cache'] && !empty($this->cache) && !$force) {
-                $info = $this->cache->get($cacheKey);
-            }
-
-            if (empty($info)) {
-                $info = $this->getTableFieldsInfo($tableName);
-                if (!empty($this->cache) && ($this->config['fields_cache'] || $force)) {
-                    $this->cache->set($cacheKey, $info);
-                }
-            }
-
-            $pk      = $info['_pk'] ?? null;
-            $autoinc = $info['_autoinc'] ?? null;
-            unset($info['_pk'], $info['_autoinc']);
-
-            $bind = [];
-            foreach ($info as $name => $val) {
-                $bind[$name] = $this->getFieldBindType($val);
-            }
-
-            $this->info[$schema] = [
-                'fields'  => array_keys($info),
-                'type'    => $info,
-                'bind'    => $bind,
-                'pk'      => $pk,
-                'autoinc' => $autoinc,
-            ];
-        }
-
-        return $this->info[$schema];
-    }
-
-    /**
-     * 获取数据表信息
-     * @access public
+     * 获取数据表信息.
+     *
      * @param mixed  $tableName 数据表名 留空自动获取
      * @param string $fetch     获取信息类型 包括 fields type bind pk
+     *
      * @return mixed
      */
-    public function getTableInfo($tableName, string $fetch = '')
+    public function getTableInfo(array | string $tableName, string $fetch = '')
     {
         if (is_array($tableName)) {
             $tableName = key($tableName) ?: current($tableName);
         }
 
-        if (strpos($tableName, ',') || strpos($tableName, ')')) {
+        if (str_contains($tableName, ',') || str_contains($tableName, ')')) {
             // 多表不获取字段信息
             return [];
         }
@@ -408,13 +429,14 @@ abstract class PDOConnection extends Connection
 
         $info = $this->getSchemaInfo($tableName);
 
-        return $fetch ? $info[$fetch] : $info;
+        return $fetch && array_key_exists($fetch, $info) ? $info[$fetch] : $info;
     }
 
     /**
-     * 获取数据表的字段信息
-     * @access public
+     * 获取数据表的字段信息.
+     *
      * @param string $tableName 数据表名
+     *
      * @return array
      */
     public function getTableFieldsInfo(string $tableName): array
@@ -449,9 +471,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据表的主键
-     * @access public
+     * 获取数据表的主键.
+     *
      * @param mixed $tableName 数据表名
+     *
      * @return string|array
      */
     public function getPk($tableName)
@@ -460,10 +483,11 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据表的自增主键
-     * @access public
+     * 获取数据表的自增主键.
+     *
      * @param mixed $tableName 数据表名
-     * @return string
+     *
+     * @return string|null
      */
     public function getAutoInc($tableName)
     {
@@ -471,9 +495,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据表字段信息
-     * @access public
+     * 获取数据表字段信息.
+     *
      * @param mixed $tableName 数据表名
+     *
      * @return array
      */
     public function getTableFields($tableName): array
@@ -482,13 +507,14 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据表字段类型
-     * @access public
+     * 获取数据表字段类型.
+     *
      * @param mixed  $tableName 数据表名
      * @param string $field     字段名
+     *
      * @return array|string
      */
-    public function getFieldsType($tableName, string $field = null)
+    public function getFieldsType($tableName, ?string $field = null)
     {
         $result = $this->getTableInfo($tableName, 'type');
 
@@ -500,9 +526,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据表绑定信息
-     * @access public
+     * 获取数据表绑定信息.
+     *
      * @param mixed $tableName 数据表名
+     *
      * @return array
      */
     public function getFieldsBind($tableName): array
@@ -511,13 +538,15 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 连接数据库方法
-     * @access public
+     * 连接数据库方法.
+     *
      * @param array      $config         连接参数
-     * @param integer    $linkNum        连接序号
+     * @param int        $linkNum        连接序号
      * @param array|bool $autoConnection 是否自动连接主数据库（用于分布式）
-     * @return PDO
+     *
      * @throws PDOException
+     *
+     * @return PDO
      */
     public function connect(array $config = [], $linkNum = 0, $autoConnection = false): PDO
     {
@@ -559,10 +588,15 @@ abstract class PDOConnection extends Connection
                 $this->trigger('CONNECT:[ UseTime:' . number_format(microtime(true) - $startTime, 6) . 's ] ' . $config['dsn']);
             }
 
+            // 设置数据库时区
+            $this->setTimezone($this->links[$linkNum], $config['timezone']);
+
+            $this->db->trigger('after_connect', $this->links[$linkNum]);
             return $this->links[$linkNum];
         } catch (\PDOException $e) {
             if ($autoConnection) {
                 $this->db->log($e->getMessage(), 'error');
+
                 return $this->connect($autoConnection, $linkNum);
             } else {
                 throw $e;
@@ -571,9 +605,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 视图查询
-     * @access public
+     * 视图查询.
+     *
      * @param array $args
+     *
      * @return BaseQuery
      */
     public function view(...$args)
@@ -582,11 +617,13 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 创建PDO实例
+     * 创建PDO实例.
+     *
      * @param $dsn
      * @param $username
      * @param $password
      * @param $params
+     *
      * @return PDO
      */
     protected function createPdo($dsn, $username, $password, $params)
@@ -595,8 +632,7 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 释放查询结果
-     * @access public
+     * 释放查询结果.
      */
     public function free(): void
     {
@@ -605,7 +641,7 @@ abstract class PDOConnection extends Connection
 
     /**
      * 获取PDO对象
-     * @access public
+     *
      * @return PDO|false
      */
     public function getPdo()
@@ -618,23 +654,24 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 执行查询 使用生成器返回数据
-     * @access public
+     * 执行查询 使用生成器返回数据.
+     *
      * @param BaseQuery  $query     查询对象
      * @param string     $sql       sql指令
      * @param Model|null $model     模型对象实例
-     * @param null       $condition 查询条件
-     * @return \Generator
+     *
      * @throws DbException
+     *
+     * @return \Generator
      */
-    public function getCursor(BaseQuery $query, string $sql, $model = null, $condition = null)
+    public function getCursor(BaseQuery $query, string $sql, $model = null)
     {
         $this->queryPDOStatement($query, $sql);
 
         // 返回结果集
         while ($result = $this->PDOStatement->fetch($this->fetchType)) {
             if ($model) {
-                yield $model->newInstance($result, $condition);
+                yield $model->newInstance($result);
             } else {
                 yield $result;
             }
@@ -642,76 +679,102 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 执行查询 返回数据集
-     * @access public
+     * 执行查询 返回数据集.
+     *
      * @param string $sql    sql指令
      * @param array  $bind   参数绑定
      * @param bool   $master 主库读取
-     * @return array
+     *
      * @throws DbException
+     *
+     * @return array
      */
     public function query(string $sql, array $bind = [], bool $master = false): array
     {
-        return $this->pdoQuery($this->newQuery()->bind($bind), $sql, $master);
+        $this->getPDOStatement($sql, $bind, $master);
+        return $this->getResult();
     }
 
     /**
-     * 执行语句
-     * @access public
+     * 执行语句.
+     *
      * @param string $sql  sql指令
      * @param array  $bind 参数绑定
-     * @return int
+     *
      * @throws DbException
+     *
+     * @return int
      */
     public function execute(string $sql, array $bind = []): int
     {
-        return $this->pdoExecute($this->newQuery()->bind($bind), $sql, true);
+        $this->getPDOStatement($sql, $bind, true);
+        return $this->PDOStatement->rowCount();
     }
 
     /**
-     * 执行查询 返回数据集
-     * @access protected
+     * 获取最近插入的ID.
+     * @param string    $sequence 自增序列名
+     *
+     * @return mixed
+     */
+    public function getAutoID(?string $sequence = null)
+    {
+        try {
+            $insertId = $this->linkID->lastInsertId($sequence);
+        } catch (\Exception $e) {
+            $insertId = '';
+        }
+
+        return $insertId;
+    }
+
+    /**
+     * 执行查询 返回数据集.
+     *
      * @param BaseQuery $query  查询对象
      * @param mixed     $sql    sql指令
      * @param bool      $master 主库读取
-     * @return array
+     *
      * @throws DbException
+     *
+     * @return array
      */
-    protected function pdoQuery(BaseQuery $query, $sql, bool $master = null): array
+    protected function pdoQuery(BaseQuery $query, $sql, ?bool $master = null): array
     {
         // 分析查询表达式
         $query->parseOptions();
         $bind = $query->getBind();
 
-        if ($query->getOptions('cache')) {
+        if ($query->getOption('cache')) {
             // 检查查询缓存
-            $cacheItem = $this->parseCache($query, $query->getOptions('cache'));
-            if (!$query->getOptions('force_cache')) {
-                $key       = $cacheItem->getKey();
+            $cacheItem = $this->parseCache($query, $query->getOption('cache'));
+            if (!$query->getOption('force_cache')) {
+                $key = $cacheItem->getKey();
 
-                $data = $this->cache->get($key);
-
-                if (null !== $data) {
-                    return $data;
+                if ($this->cache->has($key)) {
+                    $data = $this->cache->get($key);
+                    if (null !== $data && is_array($data)) {
+                        return $data;
+                    }
                 }
             }
         }
 
         if ($sql instanceof Closure) {
             $sql  = $sql($query);
-            $bind = $query->getBind();
+            $bind = array_merge($bind, $query->getBind());
         }
 
         if (!isset($master)) {
-            $master = $query->getOptions('master') ? true : false;
+            $master = (bool) $query->getOption('master');
         }
 
-        $procedure = $query->getOptions('procedure') ? true : in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+        $procedure = $query->getOption('procedure') || in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
 
         $this->getPDOStatement($sql, $bind, $master, $procedure);
 
         $resultSet    = $this->getResult($procedure);
-        $requireCache = $query->getOptions('cache_always') || !empty($resultSet);
+        $requireCache = $query->getOption('cache_always') || !empty($resultSet);
 
         if (isset($cacheItem) && $requireCache) {
             // 缓存数据集
@@ -724,10 +787,12 @@ abstract class PDOConnection extends Connection
 
     /**
      * 执行查询但只返回PDOStatement对象
-     * @access public
+     *
      * @param BaseQuery $query 查询对象
-     * @return \PDOStatement
+     *
      * @throws DbException
+     *
+     * @return \PDOStatement
      */
     public function pdo(BaseQuery $query): PDOStatement
     {
@@ -739,13 +804,15 @@ abstract class PDOConnection extends Connection
 
     /**
      * 执行查询但只返回PDOStatement对象
-     * @access public
+     *
      * @param string $sql       sql指令
      * @param array  $bind      参数绑定
      * @param bool   $master    是否在主服务器读操作
      * @param bool   $procedure 是否为存储过程调用
-     * @return PDOStatement
+     *
      * @throws DbException
+     *
+     * @return PDOStatement
      */
     public function getPDOStatement(string $sql, array $bind = [], bool $master = false, bool $procedure = false): PDOStatement
     {
@@ -755,7 +822,6 @@ abstract class PDOConnection extends Connection
             $this->queryStr = $sql;
             $this->bind     = $bind;
 
-            $this->db->updateQueryTimes();
             $this->queryStartTime = microtime(true);
 
             // 预处理
@@ -779,7 +845,7 @@ abstract class PDOConnection extends Connection
             $this->reConnectTimes = 0;
 
             return $this->PDOStatement;
-        } catch (\Throwable | \Exception $e) {
+        } catch (\Throwable  | \Exception $e) {
             if ($this->transTimes > 0) {
                 // 事务活动中时不应该进行重试，应直接中断执行，防止造成污染。
                 if ($this->isBreak($e)) {
@@ -788,12 +854,16 @@ abstract class PDOConnection extends Connection
                 }
             } else {
                 if ($this->reConnectTimes < 4 && $this->isBreak($e)) {
-                    ++$this->reConnectTimes;
+                    $this->reConnectTimes++;
+
                     return $this->close()->getPDOStatement($sql, $bind, $master, $procedure);
                 }
             }
 
             if ($e instanceof \PDOException) {
+                if (str_contains($e->getMessage(),'1062 Duplicate entry')) {
+                    throw new DuplicateException($e, $this->config, $this->getLastsql());
+                }
                 throw new PDOException($e, $this->config, $this->getLastsql());
             } else {
                 throw $e;
@@ -802,13 +872,15 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 执行语句
-     * @access protected
+     * 执行语句.
+     *
      * @param BaseQuery $query  查询对象
      * @param string    $sql    sql指令
      * @param bool      $origin 是否原生查询
-     * @return int
+     *
      * @throws DbException
+     *
+     * @return int
      */
     protected function pdoExecute(BaseQuery $query, string $sql, bool $origin = false): int
     {
@@ -824,9 +896,9 @@ abstract class PDOConnection extends Connection
 
         $this->numRows = $this->PDOStatement->rowCount();
 
-        if ($query->getOptions('cache')) {
+        if ($query->getOption('cache')) {
             // 清理缓存数据
-            $cacheItem = $this->parseCache($query, $query->getOptions('cache'));
+            $cacheItem = $this->parseCache($query, $query->getOption('cache'));
             $key       = $cacheItem->getKey();
             $tag       = $cacheItem->getTag();
 
@@ -843,25 +915,29 @@ abstract class PDOConnection extends Connection
     /**
      * @param BaseQuery $query
      * @param string    $sql
-     * @return PDOStatement
+     *
      * @throws DbException
+     *
+     * @return PDOStatement
      */
     protected function queryPDOStatement(BaseQuery $query, string $sql): PDOStatement
     {
         $options   = $query->getOptions();
         $bind      = $query->getBind();
-        $master    = !empty($options['master']) ? true : false;
-        $procedure = !empty($options['procedure']) ? true : in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
+        $master    = !empty($options['master']);
+        $procedure = !empty($options['procedure']) || in_array(strtolower(substr(trim($sql), 0, 4)), ['call', 'exec']);
 
         return $this->getPDOStatement($sql, $bind, $master, $procedure);
     }
 
     /**
-     * 查找单条记录
-     * @access public
+     * 查找单条记录.
+     *
      * @param BaseQuery $query 查询对象
-     * @return array
+     *
      * @throws DbException
+     *
+     * @return array
      */
     public function find(BaseQuery $query): array
     {
@@ -881,31 +957,38 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 使用游标查询记录
-     * @access public
+     * 使用游标查询记录.
+     *
      * @param BaseQuery $query 查询对象
+     * @param bool $unbuffered 是否开启无缓冲查询（仅限mysql）
+     *
      * @return \Generator
      */
-    public function cursor(BaseQuery $query)
+    public function cursor(BaseQuery $query, bool $unbuffered = false)
     {
         // 分析查询表达式
         $options = $query->parseOptions();
 
         // 生成查询SQL
         $sql = $this->builder->select($query);
-
-        $condition = $options['where']['AND'] ?? null;
+        
+        // 检查是否需要无缓冲查询（仅对MySQL且支持该方法时生效）
+        if ($unbuffered && method_exists($this, 'cursorUnbuffered')) {
+            return $this->cursorUnbuffered($query, $sql);
+        }
 
         // 执行查询操作
-        return $this->getCursor($query, $sql, $query->getModel(), $condition);
+        return $this->getCursor($query, $sql, $query->getModel());
     }
 
     /**
-     * 查找记录
-     * @access public
+     * 查找记录.
+     *
      * @param BaseQuery $query 查询对象
-     * @return array
+     *
      * @throws DbException
+     *
+     * @return array
      */
     public function select(BaseQuery $query): array
     {
@@ -922,10 +1005,11 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 插入记录
-     * @access public
+     * 插入记录.
+     *
      * @param BaseQuery $query        查询对象
-     * @param boolean   $getLastInsID 返回自增主键
+     * @param bool      $getLastInsID 返回自增主键
+     *
      * @return mixed
      */
     public function insert(BaseQuery $query, bool $getLastInsID = false)
@@ -947,7 +1031,7 @@ abstract class PDOConnection extends Connection
 
             if ($lastInsId) {
                 $pk = $query->getAutoInc();
-                if ($pk) {
+                if ($pk && is_string($pk)) {
                     $data[$pk] = $lastInsId;
                 }
             }
@@ -965,21 +1049,28 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 批量插入记录
-     * @access public
+     * 批量插入记录.
+     *
      * @param BaseQuery $query   查询对象
-     * @param mixed     $dataSet 数据集
-     * @param integer   $limit   每次写入数据限制
-     * @return integer
+     * @param array     $dataSet 数据集
+     *
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return int
      */
-    public function insertAll(BaseQuery $query, array $dataSet = [], int $limit = 0): int
+    public function insertAll(BaseQuery $query, array $dataSet = []): int
     {
-        $query->parseOptions();
-
         if (!is_array(reset($dataSet))) {
             return 0;
+        }
+
+        $options = $query->parseOptions();
+
+        if (!empty($options['limit']) && is_numeric($options['limit'])) {
+            $limit = (int) $options['limit'];
+        } else {
+            $limit = 0;
         }
 
         if (0 === $limit && count($dataSet) >= 5000) {
@@ -1001,8 +1092,9 @@ abstract class PDOConnection extends Connection
 
                 // 提交事务
                 $this->commit();
-            } catch (\Exception | \Throwable $e) {
+            } catch (\Exception  | \Throwable $e) {
                 $this->rollback();
+
                 throw $e;
             }
 
@@ -1015,19 +1107,26 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 批量插入记录
-     * @access public
+     * 批量插入记录.
+     *
      * @param BaseQuery $query   查询对象
      * @param array     $keys 键值
      * @param array     $values 数据
-     * @param integer   $limit   每次写入数据限制
-     * @return integer
+     *
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return int
      */
-    public function insertAllByKeys(BaseQuery $query, array $keys, array $values, int $limit = 0): int
+    public function insertAllByKeys(BaseQuery $query, array $keys, array $values): int
     {
-        $query->parseOptions();
+        $options = $query->parseOptions();
+
+        if (!empty($options['limit']) && is_numeric($options['limit'])) {
+            $limit = (int) $options['limit'];
+        } else {
+            $limit = 0;
+        }
 
         if (0 === $limit && count($values) >= 5000) {
             $limit = 1000;
@@ -1048,8 +1147,9 @@ abstract class PDOConnection extends Connection
 
                 // 提交事务
                 $this->commit();
-            } catch (\Exception | \Throwable $e) {
+            } catch (\Exception  | \Throwable $e) {
                 $this->rollback();
+
                 throw $e;
             }
 
@@ -1062,13 +1162,15 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 通过Select方式插入记录
-     * @access public
+     * 通过Select方式插入记录.
+     *
      * @param BaseQuery $query  查询对象
      * @param array     $fields 要插入的数据表字段名
      * @param string    $table  要插入的数据表名
-     * @return integer
+     *
      * @throws PDOException
+     *
+     * @return int
      */
     public function selectInsert(BaseQuery $query, array $fields, string $table): int
     {
@@ -1081,11 +1183,13 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 更新记录
-     * @access public
+     * 更新记录.
+     *
      * @param BaseQuery $query 查询对象
-     * @return integer
+     *
      * @throws PDOException
+     *
+     * @return int
      */
     public function update(BaseQuery $query): int
     {
@@ -1105,11 +1209,13 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 删除记录
-     * @access public
+     * 删除记录.
+     *
      * @param BaseQuery $query 查询对象
-     * @return int
+     *
      * @throws PDOException
+     *
+     * @return int
      */
     public function delete(BaseQuery $query): int
     {
@@ -1131,11 +1237,12 @@ abstract class PDOConnection extends Connection
 
     /**
      * 得到某个字段的值
-     * @access public
+     *
      * @param BaseQuery $query   查询对象
      * @param string    $field   字段名
      * @param mixed     $default 默认值
      * @param bool      $one     返回一个值
+     *
      * @return mixed
      */
     public function value(BaseQuery $query, string $field, $default = null, bool $one = true)
@@ -1154,12 +1261,14 @@ abstract class PDOConnection extends Connection
 
         if (!empty($options['cache'])) {
             $cacheItem = $this->parseCache($query, $options['cache'], 'value');
-
-            if (!$query->getOptions('force_cache')) {
-                $key       = $cacheItem->getKey();
+            if (empty($options['force_cache'])) {
+                $key = $cacheItem->getKey();
 
                 if ($this->cache->has($key)) {
-                    return $this->cache->get($key);
+                    $data = $this->cache->get($key);
+                    if (null !== $data) {
+                        return $data;
+                    }
                 }
             }
         }
@@ -1180,27 +1289,30 @@ abstract class PDOConnection extends Connection
         // 执行查询操作
         $pdo = $this->getPDOStatement($sql, $query->getBind(), $options['master']);
 
-        $result = $pdo->fetchColumn();
+        $result       = $pdo->fetchColumn();
+        $result       = false !== $result ? $result : $default;
+        $requireCache = $query->getOption('cache_always') || !empty($result);
 
-        if (isset($cacheItem)) {
+        if (isset($cacheItem) && $requireCache) {
             // 缓存数据
             $cacheItem->set($result);
             $this->cacheData($cacheItem);
         }
 
-        return false !== $result ? $result : $default;
+        return $result;
     }
 
     /**
      * 得到某个字段的值
-     * @access public
-     * @param BaseQuery $query     查询对象
-     * @param string    $aggregate 聚合方法
-     * @param mixed     $field     字段名
-     * @param bool      $force     强制转为数字类型
+     *
+     * @param BaseQuery  $query     查询对象
+     * @param string     $aggregate 聚合方法
+     * @param string|Raw $field     字段名
+     * @param bool       $force     强制转为数字类型
+     *
      * @return mixed
      */
-    public function aggregate(BaseQuery $query, string $aggregate, $field, bool $force = false)
+    public function aggregate(BaseQuery $query, string $aggregate, string | Raw $field, bool $force = false)
     {
         if (is_string($field) && 0 === stripos($field, 'DISTINCT ')) {
             [$distinct, $field] = explode(' ', $field);
@@ -1208,20 +1320,21 @@ abstract class PDOConnection extends Connection
 
         $field = $aggregate . '(' . (!empty($distinct) ? 'DISTINCT ' : '') . $this->builder->parseKey($query, $field, true) . ') AS think_' . strtolower($aggregate);
 
-        $result = $this->value($query, $field, 0);
+        $result = $this->value($query, $field, 0, false);
 
         return $force ? (float) $result : $result;
     }
 
     /**
-     * 得到某个列的数组
-     * @access public
-     * @param BaseQuery     $query  查询对象
-     * @param string|array  $column 字段名 多个字段用逗号分隔
-     * @param string        $key    索引
+     * 得到某个列的数组.
+     *
+     * @param BaseQuery    $query  查询对象
+     * @param string|array $column 字段名 多个字段用逗号分隔
+     * @param string       $key    索引
+     *
      * @return array
      */
-    public function column(BaseQuery $query, $column, string $key = ''): array
+    public function column(BaseQuery $query, string | array $column, string $key = ''): array
     {
         $options = $query->parseOptions();
 
@@ -1238,12 +1351,8 @@ abstract class PDOConnection extends Connection
             if ('*' !== $column) {
                 $column = array_map('trim', explode(',', $column));
             }
-        } elseif (is_array($column)) {
-            if (in_array('*', $column)) {
-                $column = '*';
-            }
-        } else {
-            throw new DbException('not support type');
+        } elseif (in_array('*', $column)) {
+            $column = '*';
         }
 
         $field = $column;
@@ -1251,16 +1360,19 @@ abstract class PDOConnection extends Connection
             $field[] = $key;
         }
 
-        $query->setOption('field', $field);
+        $query->setOption('field', (array) $field);
 
         if (!empty($options['cache'])) {
             // 判断查询缓存
             $cacheItem = $this->parseCache($query, $options['cache'], 'column');
-            if (!$query->getOptions('force_cache')) {
-                $name      = $cacheItem->getKey();
+            if (empty($options['force_cache'])) {
+                $name = $cacheItem->getKey();
 
                 if ($this->cache->has($name)) {
-                    return $this->cache->get($name);
+                    $data = $this->cache->get($name);
+                    if (null !== $data) {
+                        return $data;
+                    }
                 }
             }
         }
@@ -1278,7 +1390,7 @@ abstract class PDOConnection extends Connection
         $pdo       = $this->getPDOStatement($sql, $query->getBind(), $options['master']);
         $resultSet = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
-        if (is_string($key) && strpos($key, '.')) {
+        if (is_string($key) && str_contains($key, '.')) {
             [$alias, $key] = explode('.', $key);
         }
 
@@ -1286,15 +1398,15 @@ abstract class PDOConnection extends Connection
             $result = [];
         } elseif ('*' !== $column && count($column) === 1) {
             $column = array_shift($column);
-            if (strpos($column, ' ')) {
+            if (str_contains($column, ' ')) {
                 $column = substr(strrchr(trim($column), ' '), 1);
             }
 
-            if (strpos($column, '.')) {
+            if (str_contains($column, '.')) {
                 [$alias, $column] = explode('.', $column);
             }
 
-            if (strpos($column, '->')) {
+            if (str_contains($column, '->')) {
                 $column = $this->builder->parseKey($query, $column);
             }
 
@@ -1305,7 +1417,9 @@ abstract class PDOConnection extends Connection
             $result = $resultSet;
         }
 
-        if (isset($cacheItem)) {
+        $requireCache = $query->getOption('cache_always') || !empty($result);
+
+        if (isset($cacheItem) && $requireCache) {
             // 缓存数据
             $cacheItem->set($result);
             $this->cacheData($cacheItem);
@@ -1315,41 +1429,15 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 根据参数绑定组装最终的SQL语句 便于调试
-     * @access public
-     * @param string $sql  带参数绑定的sql语句
-     * @param array  $bind 参数绑定列表
-     * @return string
-     */
-    public function getRealSql(string $sql, array $bind = []): string
-    {
-        foreach ($bind as $key => $val) {
-            $value = strval(is_array($val) ? $val[0] : $val);
-            $type  = is_array($val) ? $val[1] : PDO::PARAM_STR;
-
-            if (self::PARAM_FLOAT == $type || PDO::PARAM_STR == $type) {
-                $value = '\'' . addslashes($value) . '\'';
-            } elseif (PDO::PARAM_INT == $type && '' === $value) {
-                $value = '0';
-            }
-
-            // 判断占位符
-            $sql = is_numeric($key) ?
-                substr_replace($sql, $value, strpos($sql, '?'), 1) :
-                substr_replace($sql, $value, strpos($sql, ':' . $key), strlen(':' . $key));
-        }
-
-        return rtrim($sql);
-    }
-
-    /**
      * 参数绑定
      * 支持 ['name'=>'value','id'=>123] 对应命名占位符
-     * 或者 ['value',123] 对应问号占位符
-     * @access public
+     * 或者 ['value',123] 对应问号占位符.
+     *
      * @param array $bind 要绑定的参数列表
-     * @return void
+     *
      * @throws BindParamException
+     *
+     * @return void
      */
     protected function bindValue(array $bind = []): void
     {
@@ -1358,11 +1446,11 @@ abstract class PDOConnection extends Connection
             $param = is_numeric($key) ? $key + 1 : ':' . $key;
 
             if (is_array($val)) {
-                if (PDO::PARAM_INT == $val[1] && '' === $val[0]) {
-                    $val[0] = 0;
+                if (self::PARAM_INT == $val[1]) {
+                    $val[0] = (int) $val[0];
                 } elseif (self::PARAM_FLOAT == $val[1]) {
                     $val[0] = is_string($val[0]) ? (float) $val[0] : $val[0];
-                    $val[1] = PDO::PARAM_STR;
+                    $val[1] = self::PARAM_STR;
                 }
 
                 $result = $this->PDOStatement->bindValue($param, $val[0], $val[1]);
@@ -1382,11 +1470,13 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 存储过程的输入输出参数绑定
-     * @access public
+     * 存储过程的输入输出参数绑定.
+     *
      * @param array $bind 要绑定的参数列表
-     * @return void
+     *
      * @throws BindParamException
+     *
+     * @return void
      */
     protected function bindParam(array $bind): void
     {
@@ -1414,9 +1504,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获得数据集数组
-     * @access protected
+     * 获得数据集数组.
+     *
      * @param bool $procedure 是否存储过程
+     *
      * @return array
      */
     protected function getResult(bool $procedure = false): array
@@ -1434,8 +1525,8 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获得存储过程数据集
-     * @access protected
+     * 获得存储过程数据集.
+     *
      * @return array
      */
     protected function procedure(): array
@@ -1456,110 +1547,112 @@ abstract class PDOConnection extends Connection
 
     /**
      * 执行数据库事务
-     * @access public
-     * @param  callable $callback 数据操作方法回调
-     * @return mixed
+     *
+     * @param callable $callback 数据操作方法回调
+     *
      * @throws PDOException
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return mixed
      */
     public function transaction(callable $callback)
     {
         $this->startTrans();
 
         try {
-            $result = null;
-            if (is_callable($callback)) {
-                $result = $callback($this);
-            }
+            $result = $callback($this);
 
             $this->commit();
+
             return $result;
-        } catch (\Exception | \Throwable $e) {
+        } catch (\Exception  | \Throwable $e) {
             $this->rollback();
+
             throw $e;
         }
     }
 
     /**
      * 启动事务
-     * @access public
-     * @return void
+     *
      * @throws \PDOException
      * @throws \Exception
+     *
+     * @return void
      */
     public function startTrans(): void
     {
         try {
             $this->initConnect(true);
 
-            ++$this->transTimes;
-
-            if (1 == $this->transTimes) {
+            if (0 == $this->transTimes) {
                 $this->linkID->beginTransaction();
-            } elseif ($this->transTimes > 1 && $this->supportSavepoint() && $this->linkID->inTransaction()) {
+            } elseif ($this->transTimes > 0 && $this->supportSavepoint() && $this->linkID->inTransaction()) {
                 $this->linkID->exec(
-                    $this->parseSavepoint('trans' . $this->transTimes)
+                    $this->parseSavepoint('trans' . ($this->transTimes + 1))
                 );
             }
+            $this->transTimes++;
             $this->reConnectTimes = 0;
-        } catch (\Throwable | \Exception $e) {
-            if (1 === $this->transTimes && $this->reConnectTimes < 4 && $this->isBreak($e)) {
-                --$this->transTimes;
-                ++$this->reConnectTimes;
+        } catch (\Throwable  | \Exception $e) {
+            if (0 === $this->transTimes && $this->reConnectTimes < 4 && $this->isBreak($e)) {
+                $this->reConnectTimes++;
                 $this->close()->startTrans();
             } else {
                 if ($this->isBreak($e)) {
                     // 尝试对事务计数进行重置
                     $this->transTimes = 0;
                 }
+
                 throw $e;
             }
         }
     }
 
     /**
-     * 用于非自动提交状态下面的查询提交
-     * @access public
-     * @return void
+     * 用于非自动提交状态下面的查询提交.
+     *
      * @throws \PDOException
+     *
+     * @return void
      */
     public function commit(): void
     {
         $this->initConnect(true);
+        $this->transTimes = max(0, $this->transTimes - 1);
 
-        if (1 == $this->transTimes && $this->linkID->inTransaction()) {
+        if (0 == $this->transTimes && $this->linkID->inTransaction()) {
             $this->linkID->commit();
         }
-
-        --$this->transTimes;
     }
 
     /**
-     * 事务回滚
-     * @access public
-     * @return void
+     * 事务回滚.
+     *
      * @throws \PDOException
+     *
+     * @return void
      */
     public function rollback(): void
     {
         $this->initConnect(true);
+        $this->transTimes = max(0, $this->transTimes - 1);
 
         if ($this->linkID->inTransaction()) {
-            if (1 == $this->transTimes) {
+            if (0 == $this->transTimes) {
                 $this->linkID->rollBack();
-            } elseif ($this->transTimes > 1 && $this->supportSavepoint()) {
+            } elseif ($this->transTimes > 0 && $this->supportSavepoint()) {
                 $this->linkID->exec(
-                    $this->parseSavepointRollBack('trans' . $this->transTimes)
+                    $this->parseSavepointRollBack('trans' . ($this->transTimes + 1))
                 );
             }
         }
-
-        $this->transTimes = max(0, $this->transTimes - 1);
     }
 
     /**
-     * 是否支持事务嵌套
+     * 是否支持事务嵌套.
+     *
      * @return bool
      */
     protected function supportSavepoint(): bool
@@ -1568,9 +1661,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 生成定义保存点的SQL
-     * @access protected
+     * 生成定义保存点的SQL.
+     *
      * @param string $name 标识
+     *
      * @return string
      */
     protected function parseSavepoint(string $name): string
@@ -1579,9 +1673,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 生成回滚到保存点的SQL
-     * @access protected
+     * 生成回滚到保存点的SQL.
+     *
      * @param string $name 标识
+     *
      * @return string
      */
     protected function parseSavepointRollBack(string $name): string
@@ -1591,25 +1686,26 @@ abstract class PDOConnection extends Connection
 
     /**
      * 批处理执行SQL语句
-     * 批处理的指令都认为是execute操作
-     * @access public
-     * @param BaseQuery $query    查询对象
+     * 批处理的指令都认为是execute操作.
+     *
      * @param array     $sqlArray SQL批处理指令
+     *
      * @return bool
      */
-    public function batchQuery(BaseQuery $query, array $sqlArray = []): bool
+    public function batchQuery(array $sqlArray = []): bool
     {
         // 自动启动事务支持
         $this->startTrans();
 
         try {
             foreach ($sqlArray as $sql) {
-                $this->pdoExecute($query, $sql);
+                $this->execute($sql);
             }
             // 提交事务
             $this->commit();
         } catch (\Exception $e) {
             $this->rollback();
+
             throw $e;
         }
 
@@ -1617,8 +1713,8 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 关闭数据库（或者重新连接）
-     * @access public
+     * 关闭数据库（或者重新连接）.
+     *
      * @return $this
      */
     public function close()
@@ -1636,8 +1732,9 @@ abstract class PDOConnection extends Connection
 
     /**
      * 是否断线
-     * @access protected
+     *
      * @param \PDOException|\Exception $e 异常对象
+     *
      * @return bool
      */
     protected function isBreak($e): bool
@@ -1658,8 +1755,8 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取最近一次查询的sql语句
-     * @access public
+     * 获取最近一次查询的sql语句.
+     *
      * @return string
      */
     public function getLastSql(): string
@@ -1668,38 +1765,34 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取最近插入的ID
-     * @access public
+     * 获取最近插入的ID.
+     *
      * @param BaseQuery $query    查询对象
      * @param string    $sequence 自增序列名
+     *
      * @return mixed
      */
-    public function getLastInsID(BaseQuery $query, string $sequence = null)
+    public function getLastInsID(BaseQuery $query, ?string $sequence = null)
     {
-        try {
-            $insertId = $this->linkID->lastInsertId($sequence);
-        } catch (\Exception $e) {
-            $insertId = '';
-        }
-
-        return $this->autoInsIDType($query, $insertId);
+        return $this->autoInsIDType($query, $this->getAutoID($sequence));
     }
 
     /**
-     * 获取最近插入的ID
-     * @access public
+     * 获取最近插入的ID.
+     *
      * @param BaseQuery $query    查询对象
      * @param string    $insertId 自增ID
+     *
      * @return mixed
      */
     protected function autoInsIDType(BaseQuery $query, string $insertId)
     {
         $pk = $query->getAutoInc();
 
-        if ($pk) {
+        if ($pk && is_string($pk)) {
             $type = $this->getFieldsBind($query->getTable())[$pk];
 
-            if (PDO::PARAM_INT == $type) {
+            if (self::PARAM_INT == $type) {
                 $insertId = (int) $insertId;
             } elseif (self::PARAM_FLOAT == $type) {
                 $insertId = (float) $insertId;
@@ -1710,8 +1803,8 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取最近的错误信息
-     * @access public
+     * 获取最近的错误信息.
+     *
      * @return string
      */
     public function getError(): string
@@ -1731,9 +1824,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 初始化数据库连接
-     * @access protected
-     * @param boolean $master 是否主服务器
+     * 初始化数据库连接.
+     *
+     * @param bool $master 是否主服务器
+     *
      * @return void
      */
     protected function initConnect(bool $master = true): void
@@ -1760,9 +1854,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 连接分布式服务器
-     * @access protected
-     * @param boolean $master 主服务器
+     * 连接分布式服务器.
+     *
+     * @param bool $master 主服务器
+     *
      * @return PDO
      */
     protected function multiConnect(bool $master = false): PDO
@@ -1779,8 +1874,8 @@ abstract class PDOConnection extends Connection
 
         if ($this->config['rw_separate']) {
             // 主从式采用读写分离
-            if ($master) // 主服务器写入
-            {
+            if ($master) {
+                // 主服务器写入
                 $r = $m;
             } elseif (is_numeric($this->config['slave_no'])) {
                 // 指定服务器读
@@ -1812,9 +1907,10 @@ abstract class PDOConnection extends Connection
     }
 
     /**
-     * 获取数据库的唯一标识
-     * @access public
+     * 获取数据库的唯一标识.
+     *
      * @param string $suffix 标识后缀
+     *
      * @return string
      */
     public function getUniqueXid(string $suffix = ''): string
@@ -1824,13 +1920,15 @@ abstract class PDOConnection extends Connection
 
     /**
      * 执行数据库Xa事务
-     * @access public
-     * @param  callable $callback 数据操作方法回调
-     * @param  array    $dbs      多个查询对象或者连接对象
-     * @return mixed
+     *
+     * @param callable $callback 数据操作方法回调
+     * @param array    $dbs      多个查询对象或者连接对象
+     *
      * @throws PDOException
      * @throws \Exception
      * @throws \Throwable
+     *
+     * @return mixed
      */
     public function transactionXa(callable $callback, array $dbs = [])
     {
@@ -1847,36 +1945,35 @@ abstract class PDOConnection extends Connection
                 $dbs[$key] = $db;
             }
 
-            $db->startTransXa($db->getUniqueXid('_' . $xid) );
+            $db->startTransXa($db->getUniqueXid('_' . $xid));
         }
 
         try {
-            $result = null;
-            if (is_callable($callback)) {
-                $result = $callback($this);
-            }
+            $result = $callback($this);
 
             foreach ($dbs as $db) {
                 $db->prepareXa($db->getUniqueXid('_' . $xid));
             }
 
             foreach ($dbs as $db) {
-                $db->commitXa($db->getUniqueXid('_' . $xid) );
+                $db->commitXa($db->getUniqueXid('_' . $xid));
             }
 
             return $result;
-        } catch (\Exception | \Throwable $e) {
+        } catch (\Exception  | \Throwable $e) {
             foreach ($dbs as $db) {
-                $db->rollbackXa($db->getUniqueXid('_' . $xid) );
+                $db->rollbackXa($db->getUniqueXid('_' . $xid));
             }
+
             throw $e;
         }
     }
 
     /**
      * 启动XA事务
-     * @access public
-     * @param  string $xid XA事务id
+     *
+     * @param string $xid XA事务id
+     *
      * @return void
      */
     public function startTransXa(string $xid): void
@@ -1885,8 +1982,9 @@ abstract class PDOConnection extends Connection
 
     /**
      * 预编译XA事务
-     * @access public
-     * @param  string $xid XA事务id
+     *
+     * @param string $xid XA事务id
+     *
      * @return void
      */
     public function prepareXa(string $xid): void
@@ -1895,8 +1993,9 @@ abstract class PDOConnection extends Connection
 
     /**
      * 提交XA事务
-     * @access public
-     * @param  string $xid XA事务id
+     *
+     * @param string $xid XA事务id
+     *
      * @return void
      */
     public function commitXa(string $xid): void
@@ -1905,11 +2004,51 @@ abstract class PDOConnection extends Connection
 
     /**
      * 回滚XA事务
-     * @access public
-     * @param  string $xid XA事务id
+     *
+     * @param string $xid XA事务id
+     *
      * @return void
      */
     public function rollbackXa(string $xid): void
     {
+    }
+
+    /**
+     * 设置数据库时区.
+     *
+     * @param PDO   $pdo       PDO实例
+     * @param string $timezone 时区名称，如 'Asia/Shanghai' 或 '+08:00'
+     *
+     * @return void
+     */
+    protected function setTimezone(PDO $pdo, string $timezone): void
+    {
+        if (empty($timezone)) {
+            return;
+        }
+
+        try {
+            $sql = $this->getSetTimezoneSql($timezone);
+            if (!empty($sql)) {
+                $pdo->exec($sql);
+            }
+        } catch (\Exception $e) {
+            // 时区设置失败，记录日志但不中断连接
+            $this->db->log('Set timezone failed: ' . $e->getMessage(), 'warning');
+        }
+    }
+
+    /**
+     * 获取设置时区的SQL语句.
+     * 子类应重写此方法以提供数据库特定的时区设置SQL.
+     *
+     * @param string $timezone 时区名称
+     *
+     * @return string
+     */
+    protected function getSetTimezoneSql(string $timezone): string
+    {
+        // 默认实现，子类应重写此方法
+        return '';
     }
 }

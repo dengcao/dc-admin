@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -23,30 +24,35 @@ use PhpOffice\PhpWord\Element\TextBreak as TextBreakElement;
 use PhpOffice\PhpWord\Shared\XMLWriter;
 
 /**
- * Container element writer (section, textrun, header, footnote, cell, etc.)
+ * Container element writer (section, textrun, header, footnote, cell, etc.).
  *
  * @since 0.11.0
  */
 class Container extends AbstractElement
 {
     /**
-     * Namespace; Can't use __NAMESPACE__ in inherited class (ODText)
+     * Namespace; Can't use __NAMESPACE__ in inherited class (ODText).
      *
      * @var string
      */
     protected $namespace = 'PhpOffice\\PhpWord\\Writer\\Word2007\\Element';
 
     /**
+     * @var array<string>
+     */
+    protected $containerWithoutP = ['TextRun', 'Footnote', 'Endnote', 'ListItemRun'];
+
+    /**
      * Write element.
      */
-    public function write()
+    public function write(): void
     {
         $container = $this->getElement();
         if (!$container instanceof ContainerElement) {
             return;
         }
         $containerClass = substr(get_class($container), strrpos(get_class($container), '\\') + 1);
-        $withoutP = in_array($containerClass, array('TextRun', 'Footnote', 'Endnote', 'ListItemRun'));
+        $withoutP = in_array($containerClass, $this->containerWithoutP);
         $xmlWriter = $this->getXmlWriter();
 
         // Loop through elements
@@ -62,28 +68,24 @@ class Container extends AbstractElement
         $writeLastTextBreak = ($containerClass == 'Cell') && ($elementClass == '' || $elementClass == 'Table');
         if ($writeLastTextBreak) {
             $writerClass = $this->namespace . '\\TextBreak';
-            /** @var \PhpOffice\PhpWord\Writer\Word2007\Element\AbstractElement $writer Type hint */
+            /** @var AbstractElement $writer Type hint */
             $writer = new $writerClass($xmlWriter, new TextBreakElement(), $withoutP);
             $writer->write();
         }
     }
 
     /**
-     * Write individual element
-     *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
-     * @param \PhpOffice\PhpWord\Element\AbstractElement $element
-     * @param bool $withoutP
-     * @return string
+     * Write individual element.
      */
-    private function writeElement(XMLWriter $xmlWriter, Element $element, $withoutP)
+    private function writeElement(XMLWriter $xmlWriter, Element $element, bool $withoutP): string
     {
         $elementClass = substr(get_class($element), strrpos(get_class($element), '\\') + 1);
         $writerClass = $this->namespace . '\\' . $elementClass;
 
         if (class_exists($writerClass)) {
-            /** @var \PhpOffice\PhpWord\Writer\Word2007\Element\AbstractElement $writer Type hint */
+            /** @var AbstractElement $writer Type hint */
             $writer = new $writerClass($xmlWriter, $element, $withoutP);
+            $writer->setPart($this->getPart());
             $writer->write();
         }
 

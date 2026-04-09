@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2015 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -56,7 +56,8 @@ class RunServer extends Command
         }
 
         $command = sprintf(
-            'php -S %s:%d -t %s %s',
+            '"%s" -S %s:%d -t %s %s',
+            PHP_BINARY,
             $host,
             $port,
             escapeshellarg($root),
@@ -68,5 +69,4 @@ class RunServer extends Command
         $output->writeln(sprintf('Document root is: %s', $root));
         passthru($command);
     }
-
 }

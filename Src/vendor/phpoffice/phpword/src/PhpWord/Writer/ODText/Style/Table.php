@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,14 +12,14 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Writer\ODText\Style;
 
 /**
- * Table style writer
+ * Table style writer.
  *
  * @since 0.11.0
  */
@@ -27,7 +28,7 @@ class Table extends AbstractStyle
     /**
      * Write style.
      */
-    public function write()
+    public function write(): void
     {
         /** @var \PhpOffice\PhpWord\Style\Table $style Type hint */
         $style = $this->getStyle();
@@ -50,7 +51,7 @@ class Table extends AbstractStyle
         $cellWidths = $style->getColumnWidths();
         $countCellWidths = $cellWidths === null ? 0 : count($cellWidths);
 
-        for ($i = 0; $i < $countCellWidths; $i++) {
+        for ($i = 0; $i < $countCellWidths; ++$i) {
             $width = $cellWidths[$i];
             $xmlWriter->startElement('style:style');
             $xmlWriter->writeAttribute('style:name', $style->getStyleName() . '.' . $i);

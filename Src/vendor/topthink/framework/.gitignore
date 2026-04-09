@@ -8,3 +8,5 @@ Thumbs.db
 /.settings
 /.buildpath
 /.project
+.phpunit.result.cache
+.php-cs-fixer.cache

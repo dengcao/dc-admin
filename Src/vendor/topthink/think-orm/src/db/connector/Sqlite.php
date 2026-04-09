@@ -1,8 +1,9 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -15,35 +16,34 @@ use PDO;
 use think\db\PDOConnection;
 
 /**
- * Sqlite数据库驱动
+ * Sqlite数据库驱动.
  */
 class Sqlite extends PDOConnection
 {
-
     /**
-     * 解析pdo连接的dsn信息
-     * @access protected
-     * @param  array $config 连接信息
+     * 解析pdo连接的dsn信息.
+     *
+     * @param array $config 连接信息
+     *
      * @return string
      */
     protected function parseDsn(array $config): string
     {
-        $dsn = 'sqlite:' . $config['database'];
-
-        return $dsn;
+        return 'sqlite:' . $config['database'];
     }
 
     /**
-     * 取得数据表的字段信息
-     * @access public
-     * @param  string $tableName
+     * 取得数据表的字段信息.
+     *
+     * @param string $tableName
+     *
      * @return array
      */
     public function getFields(string $tableName): array
     {
         [$tableName] = explode(' ', $tableName);
-        $sql         = 'PRAGMA table_info( \'' . $tableName . '\' )';
 
+        $sql    = 'PRAGMA table_info( \'' . $tableName . '\' )';
         $pdo    = $this->getPDOStatement($sql);
         $result = $pdo->fetchAll(PDO::FETCH_ASSOC);
         $info   = [];
@@ -67,15 +67,16 @@ class Sqlite extends PDOConnection
     }
 
     /**
-     * 取得数据库的表信息
-     * @access public
-     * @param  string $dbName
+     * 取得数据库的表信息.
+     *
+     * @param string $dbName
+     *
      * @return array
      */
     public function getTables(string $dbName = ''): array
     {
         $sql = "SELECT name FROM sqlite_master WHERE type='table' "
-            . "UNION ALL SELECT name FROM sqlite_temp_master "
+            . 'UNION ALL SELECT name FROM sqlite_temp_master '
             . "WHERE type='table' ORDER BY name";
 
         $pdo    = $this->getPDOStatement($sql);
@@ -92,5 +93,19 @@ class Sqlite extends PDOConnection
     protected function supportSavepoint(): bool
     {
         return true;
+    }
+
+    /**
+     * 获取设置时区的SQL语句.
+     *
+     * @param string $timezone 时区名称，如 'Asia/Shanghai' 或 '+08:00'
+     *
+     * @return string SQLite 不支持时区设置，返回空字符串
+     */
+    protected function getSetTimezoneSql(string $timezone): string
+    {
+        // SQLite 是嵌入式数据库，不支持时区设置
+        // 建议在应用层处理时区转换
+        return '';
     }
 }

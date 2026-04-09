@@ -31,7 +31,7 @@ class HttpTest extends TestCase
         m::close();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->app = m::mock(App::class)->makePartial();
 
@@ -53,8 +53,6 @@ class HttpTest extends TestCase
             }
             return $req === $request;
         })->andReturn($response);
-
-        $route->shouldReceive('config')->with('route_annotation')->andReturn(true);
 
         $this->app->shouldReceive('get')->with('route')->andReturn($route);
 

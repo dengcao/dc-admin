@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2021 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -12,11 +12,9 @@ declare (strict_types = 1);
 
 namespace think\route;
 
-use think\helper\Str;
-use think\Request;
+use Closure;
 use think\Route;
-use think\route\dispatch\Callback as CallbackDispatch;
-use think\route\dispatch\Controller as ControllerDispatch;
+use think\Container;
 
 /**
  * 域名路由
@@ -29,155 +27,58 @@ class Domain extends RuleGroup
      * @param  Route       $router   路由对象
      * @param  string      $name     路由域名
      * @param  mixed       $rule     域名路由
+     * @param  bool        $lazy   延迟解析
      */
-    public function __construct(Route $router, string $name = null, $rule = null)
+    public function __construct(Route $router, ?string $name = null, $rule = null, bool $lazy = false)
     {
         $this->router = $router;
         $this->domain = $name;
         $this->rule   = $rule;
+
+        if (!$lazy && !is_null($rule)) {
+            $this->parseGroupRule($rule);
+        }
     }
 
     /**
-     * 检测域名路由
+     * 解析分组和域名的路由规则及绑定
      * @access public
-     * @param  Request      $request  请求对象
-     * @param  string       $url      访问地址
-     * @param  bool         $completeMatch   路由是否完全匹配
-     * @return Dispatch|false
+     * @param  mixed $rule 路由规则
+     * @return void
      */
-    public function check(Request $request, string $url, bool $completeMatch = false)
+    public function parseGroupRule($rule): void
     {
-        // 检测URL绑定
-        $result = $this->checkUrlBind($request, $url);
+        $origin = $this->router->getGroup();
+        $this->router->setGroup($this);
 
-        if (!empty($this->option['append'])) {
-            $request->setRoute($this->option['append']);
-            unset($this->option['append']);
+        if ($rule instanceof Closure) {
+            Container::getInstance()->invokeFunction($rule);
+        } elseif ($this->config('route_auto_group')) {
+            $this->loadGroupRoutes();
         }
 
-        if (false !== $result) {
-            return $result;
-        }
-
-        return parent::check($request, $url, $completeMatch);
+        $this->router->setGroup($origin);
+        $this->hasParsed = true;
     }
 
     /**
-     * 设置路由绑定
-     * @access public
-     * @param  string     $bind 绑定信息
-     * @return $this
+     * 自动加载分组（子目录）路由
+     * @access protected
+     * @param  string  $dir 目录名
+     * @return void
      */
-    public function bind(string $bind)
+    protected function loadGroupRoutes(): void
     {
-        $this->router->bind($bind, $this->domain);
-
-        return $this;
-    }
-
-    /**
-     * 检测URL绑定
-     * @access private
-     * @param  Request   $request
-     * @param  string    $url URL地址
-     * @return Dispatch|false
-     */
-    private function checkUrlBind(Request $request, string $url)
-    {
-        $bind = $this->router->getDomainBind($this->domain);
-
-        if ($bind) {
-            $this->parseBindAppendParam($bind);
-
-            // 如果有URL绑定 则进行绑定检测
-            $type = substr($bind, 0, 1);
-            $bind = substr($bind, 1);
-
-            $bindTo = [
-                '\\' => 'bindToClass',
-                '@'  => 'bindToController',
-                ':'  => 'bindToNamespace',
-            ];
-
-            if (isset($bindTo[$type])) {
-                return $this->{$bindTo[$type]}($request, $url, $bind);
+        $routePath = root_path('route');
+        if (is_dir($routePath)) {
+            $dirs = glob($routePath . '*', GLOB_ONLYDIR);
+            foreach ($dirs as $dir) {
+                // 自动检查分组子目录
+                $groupName = str_replace('\\', '/', substr_replace($dir, '', 0, strlen($routePath)));
+                if (!$this->router->getRuleName()->hasGroup($groupName)) {
+                    $this->router->group($groupName);
+                }
             }
         }
-
-        return false;
     }
-
-    protected function parseBindAppendParam(string &$bind): void
-    {
-        if (false !== strpos($bind, '?')) {
-            [$bind, $query] = explode('?', $bind);
-            parse_str($query, $vars);
-            $this->append($vars);
-        }
-    }
-
-    /**
-     * 绑定到类
-     * @access protected
-     * @param  Request   $request
-     * @param  string    $url URL地址
-     * @param  string    $class 类名（带命名空间）
-     * @return CallbackDispatch
-     */
-    protected function bindToClass(Request $request, string $url, string $class): CallbackDispatch
-    {
-        $array  = explode('|', $url, 2);
-        $action = !empty($array[0]) ? $array[0] : $this->router->config('default_action');
-        $param  = [];
-
-        if (!empty($array[1])) {
-            $this->parseUrlParams($array[1], $param);
-        }
-
-        return new CallbackDispatch($request, $this, [$class, $action], $param);
-    }
-
-    /**
-     * 绑定到命名空间
-     * @access protected
-     * @param  Request   $request
-     * @param  string    $url URL地址
-     * @param  string    $namespace 命名空间
-     * @return CallbackDispatch
-     */
-    protected function bindToNamespace(Request $request, string $url, string $namespace): CallbackDispatch
-    {
-        $array  = explode('|', $url, 3);
-        $class  = !empty($array[0]) ? $array[0] : $this->router->config('default_controller');
-        $method = !empty($array[1]) ? $array[1] : $this->router->config('default_action');
-        $param  = [];
-
-        if (!empty($array[2])) {
-            $this->parseUrlParams($array[2], $param);
-        }
-
-        return new CallbackDispatch($request, $this, [$namespace . '\\' . Str::studly($class), $method], $param);
-    }
-
-    /**
-     * 绑定到控制器
-     * @access protected
-     * @param  Request   $request
-     * @param  string    $url URL地址
-     * @param  string    $controller 控制器名
-     * @return ControllerDispatch
-     */
-    protected function bindToController(Request $request, string $url, string $controller): ControllerDispatch
-    {
-        $array  = explode('|', $url, 2);
-        $action = !empty($array[0]) ? $array[0] : $this->router->config('default_action');
-        $param  = [];
-
-        if (!empty($array[1])) {
-            $this->parseUrlParams($array[1], $param);
-        }
-
-        return new ControllerDispatch($request, $this, $controller . '/' . $action, $param);
-    }
-
 }

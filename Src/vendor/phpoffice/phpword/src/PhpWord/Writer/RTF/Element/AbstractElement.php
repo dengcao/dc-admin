@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -24,45 +25,78 @@ use PhpOffice\PhpWord\Shared\Text as SharedText;
 use PhpOffice\PhpWord\Style;
 use PhpOffice\PhpWord\Style\Font as FontStyle;
 use PhpOffice\PhpWord\Style\Paragraph as ParagraphStyle;
-use PhpOffice\PhpWord\Writer\AbstractWriter;
-use PhpOffice\PhpWord\Writer\HTML\Element\AbstractElement as HTMLAbstractElement;
+use PhpOffice\PhpWord\Writer\RTF as WriterRTF;
 use PhpOffice\PhpWord\Writer\RTF\Style\Font as FontStyleWriter;
 use PhpOffice\PhpWord\Writer\RTF\Style\Paragraph as ParagraphStyleWriter;
 
 /**
- * Abstract RTF element writer
+ * Abstract RTF element writer.
  *
  * @since 0.11.0
  */
-abstract class AbstractElement extends HTMLAbstractElement
+abstract class AbstractElement
 {
     /**
-     * Font style
+     * Parent writer.
      *
-     * @var \PhpOffice\PhpWord\Style\Font
+     * @var WriterRTF
+     */
+    protected $parentWriter;
+
+    /**
+     * Element.
+     *
+     * @var Element
+     */
+    protected $element;
+
+    /**
+     * Without paragraph.
+     *
+     * @var bool
+     */
+    protected $withoutP = false;
+
+    /**
+     * Write element.
+     *
+     * @return string
+     */
+    abstract public function write();
+
+    /**
+     * Font style.
+     *
+     * @var FontStyle
      */
     protected $fontStyle;
 
     /**
-     * Paragraph style
+     * Paragraph style.
      *
-     * @var \PhpOffice\PhpWord\Style\Paragraph
+     * @var ParagraphStyle
      */
     protected $paragraphStyle;
 
-    public function __construct(AbstractWriter $parentWriter, Element $element, $withoutP = false)
-    {
-        parent::__construct($parentWriter, $element, $withoutP);
+    /**
+     * @var \PhpOffice\PhpWord\Escaper\EscaperInterface
+     */
+    protected $escaper;
 
+    public function __construct(WriterRTF $parentWriter, Element $element, bool $withoutP = false)
+    {
+        $this->parentWriter = $parentWriter;
+        $this->element = $element;
+        $this->withoutP = $withoutP;
         $this->escaper = new Rtf();
     }
 
     /**
      * Get font and paragraph styles.
      */
-    protected function getStyles()
+    protected function getStyles(): void
     {
-        /** @var \PhpOffice\PhpWord\Writer\RTF $parentWriter Type hint */
+        /** @var WriterRTF $parentWriter Type hint */
         $parentWriter = $this->parentWriter;
 
         /** @var \PhpOffice\PhpWord\Element\Text $element Type hint */
@@ -98,7 +132,7 @@ abstract class AbstractElement extends HTMLAbstractElement
     }
 
     /**
-     * Write opening
+     * Write opening.
      *
      * @return string
      */
@@ -115,9 +149,10 @@ abstract class AbstractElement extends HTMLAbstractElement
     }
 
     /**
-     * Write text
+     * Write text.
      *
      * @param string $text
+     *
      * @return string
      */
     protected function writeText($text)
@@ -130,7 +165,7 @@ abstract class AbstractElement extends HTMLAbstractElement
     }
 
     /**
-     * Write closing
+     * Write closing.
      *
      * @return string
      */
@@ -144,7 +179,7 @@ abstract class AbstractElement extends HTMLAbstractElement
     }
 
     /**
-     * Write font style
+     * Write font style.
      *
      * @return string
      */
@@ -154,7 +189,7 @@ abstract class AbstractElement extends HTMLAbstractElement
             return '';
         }
 
-        /** @var \PhpOffice\PhpWord\Writer\RTF $parentWriter Type hint */
+        /** @var WriterRTF $parentWriter Type hint */
         $parentWriter = $this->parentWriter;
 
         // Create style writer and set color/name index

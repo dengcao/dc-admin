@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -27,15 +28,16 @@ use PhpOffice\PhpWord\Writer\Word2007\Style\Paragraph as ParagraphStyleWriter;
 use PhpOffice\PhpWord\Writer\Word2007\Style\Table as TableStyleWriter;
 
 /**
- * Word2007 styles part writer: word/styles.xml
+ * Word2007 styles part writer: word/styles.xml.
  *
  * @todo Do something with the numbering style introduced in 0.10.0
+ *
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod) For writeFontStyle, writeParagraphStyle, and writeTableStyle
  */
 class Styles extends AbstractPart
 {
     /**
-     * Write part
+     * Write part.
      *
      * @return string
      */
@@ -76,14 +78,15 @@ class Styles extends AbstractPart
     /**
      * Write default font and other default styles.
      *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
-     * @param \PhpOffice\PhpWord\Style\AbstractStyle[] $styles
+     * @param Style\AbstractStyle[] $styles
      */
-    private function writeDefaultStyles(XMLWriter $xmlWriter, $styles)
+    private function writeDefaultStyles(XMLWriter $xmlWriter, $styles): void
     {
         $phpWord = $this->getParentWriter()->getPhpWord();
         $fontName = $phpWord->getDefaultFontName();
+        $asianFontName = $phpWord->getDefaultAsianFontName();
         $fontSize = $phpWord->getDefaultFontSize();
+        $fontColor = $phpWord->getDefaultFontColor();
         $language = $phpWord->getSettings()->getThemeFontLang();
         $latinLanguage = ($language == null || $language->getLatin() === null) ? 'en-US' : $language->getLatin();
 
@@ -94,9 +97,12 @@ class Styles extends AbstractPart
         $xmlWriter->startElement('w:rFonts');
         $xmlWriter->writeAttribute('w:ascii', $fontName);
         $xmlWriter->writeAttribute('w:hAnsi', $fontName);
-        $xmlWriter->writeAttribute('w:eastAsia', $fontName);
+        $xmlWriter->writeAttribute('w:eastAsia', $asianFontName);
         $xmlWriter->writeAttribute('w:cs', $fontName);
         $xmlWriter->endElement(); // w:rFonts
+        $xmlWriter->startElement('w:color');
+        $xmlWriter->writeAttribute('w:val', $fontColor);
+        $xmlWriter->endElement();
         $xmlWriter->startElement('w:sz');
         $xmlWriter->writeAttribute('w:val', $fontSize * 2);
         $xmlWriter->endElement(); // w:sz
@@ -125,7 +131,7 @@ class Styles extends AbstractPart
         if (isset($styles['Normal'])) {
             $normalStyle = $styles['Normal'];
             // w:pPr
-            if ($normalStyle instanceof Fontstyle && $normalStyle->getParagraph() != null) {
+            if ($normalStyle instanceof FontStyle && $normalStyle->getParagraph() != null) {
                 $styleWriter = new ParagraphStyleWriter($xmlWriter, $normalStyle->getParagraph());
                 $styleWriter->write();
             } elseif ($normalStyle instanceof ParagraphStyle) {
@@ -161,16 +167,14 @@ class Styles extends AbstractPart
     /**
      * Write font style.
      *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      * @param string $styleName
-     * @param \PhpOffice\PhpWord\Style\Font $style
      */
-    private function writeFontStyle(XMLWriter $xmlWriter, $styleName, FontStyle $style)
+    private function writeFontStyle(XMLWriter $xmlWriter, $styleName, FontStyle $style): void
     {
         $paragraphStyle = $style->getParagraph();
         $styleType = $style->getStyleType();
         $type = ($styleType == 'title') ? 'paragraph' : 'character';
-        if (!is_null($paragraphStyle)) {
+        if (null !== $paragraphStyle) {
             $type = 'paragraph';
         }
 
@@ -194,7 +198,7 @@ class Styles extends AbstractPart
             $xmlWriter->startElement('w:link');
             $xmlWriter->writeAttribute('w:val', $styleLink);
             $xmlWriter->endElement();
-        } elseif (!is_null($paragraphStyle)) {
+        } elseif (null !== $paragraphStyle) {
             // if type is 'paragraph' it should have a styleId
             $xmlWriter->writeAttribute('w:styleId', $styleName);
         }
@@ -205,7 +209,7 @@ class Styles extends AbstractPart
         $xmlWriter->endElement();
 
         // Parent style
-        if (!is_null($paragraphStyle)) {
+        if (null !== $paragraphStyle) {
             if ($paragraphStyle->getStyleName() != null) {
                 $xmlWriter->writeElementBlock('w:basedOn', 'w:val', $paragraphStyle->getStyleName());
             } elseif ($paragraphStyle->getBasedOn() != null) {
@@ -214,7 +218,7 @@ class Styles extends AbstractPart
         }
 
         // w:pPr
-        if (!is_null($paragraphStyle)) {
+        if (null !== $paragraphStyle) {
             $styleWriter = new ParagraphStyleWriter($xmlWriter, $paragraphStyle);
             $styleWriter->write();
         }
@@ -229,11 +233,9 @@ class Styles extends AbstractPart
     /**
      * Write paragraph style.
      *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      * @param string $styleName
-     * @param \PhpOffice\PhpWord\Style\Paragraph $style
      */
-    private function writeParagraphStyle(XMLWriter $xmlWriter, $styleName, ParagraphStyle $style)
+    private function writeParagraphStyle(XMLWriter $xmlWriter, $styleName, ParagraphStyle $style): void
     {
         $xmlWriter->startElement('w:style');
         $xmlWriter->writeAttribute('w:type', 'paragraph');
@@ -245,11 +247,11 @@ class Styles extends AbstractPart
 
         // Parent style
         $basedOn = $style->getBasedOn();
-        $xmlWriter->writeElementIf(!is_null($basedOn), 'w:basedOn', 'w:val', $basedOn);
+        $xmlWriter->writeElementIf(null !== $basedOn, 'w:basedOn', 'w:val', $basedOn);
 
         // Next paragraph style
         $next = $style->getNext();
-        $xmlWriter->writeElementIf(!is_null($next), 'w:next', 'w:val', $next);
+        $xmlWriter->writeElementIf(null !== $next, 'w:next', 'w:val', $next);
 
         // w:pPr
         $styleWriter = new ParagraphStyleWriter($xmlWriter, $style);
@@ -261,11 +263,9 @@ class Styles extends AbstractPart
     /**
      * Write table style.
      *
-     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
      * @param string $styleName
-     * @param \PhpOffice\PhpWord\Style\Table $style
      */
-    private function writeTableStyle(XMLWriter $xmlWriter, $styleName, TableStyle $style)
+    private function writeTableStyle(XMLWriter $xmlWriter, $styleName, TableStyle $style): void
     {
         $xmlWriter->startElement('w:style');
         $xmlWriter->writeAttribute('w:type', 'table');

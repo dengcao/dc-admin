@@ -1,6 +1,6 @@
-# caozha-admin 后台管理框架 1.9.2
+# dc-admin 后台管理框架 2.0
 
-caozha-admin是一个通用的PHP网站后台管理框架，基于开源的ThinkPHP开发，特点：易上手，零门槛，界面清爽极简，极便于二次开发。
+dc-admin（原caozha-admin）是一个通用的PHP网站后台管理框架，基于开源的ThinkPHP8.1开发，特点：易上手，零门槛，界面清爽极简，极便于二次开发。
 
 ### 基础功能
 
@@ -32,16 +32,16 @@ caozha-admin是一个通用的PHP网站后台管理框架，基于开源的Think
 
 **开发环境**
 
-本人开发此系统使用的本地环境是：[phpstudy8.1集成工具（已集成php8.0.14nts/php8.1.1nts，有需要点击下载）](https://gitee.com/dengzhenhua/php8.0-8.1-for-phpstudy)，phpMyAdmin 4.8.5，Apache2.4.39（或Nginx1.15.11），PHP8.0.14，MySQL5.7.26。
+本人开发此系统使用的本地环境是：[phpstudy8.1集成工具（离线版，有需要点击下载）](https://gitee.com/dengzhenhua/phpstudy)，phpMyAdmin 4.8.5，Apache2.4.39（或Nginx1.15.11），PHP8.2，MySQL5.7.26。
 
-事实上，您不需要使用跟以上完全一致的环境也可以正常运行本系统，理论上只要PHP>=8.0即可。如有不兼容，建议模拟本环境测试，并欢迎您提建议和反馈BUG。
+事实上，您不需要使用跟以上完全一致的环境也可以正常运行本系统，理论上只要PHP>=8.2即可。如有不兼容，建议模拟本环境测试，并欢迎您提建议和反馈BUG。
 
 
 **快速安装**
 
-1、PHP版本：必须PHP8.0以上，经测试支持：PHP 8.0/8.1/8.2/8.3。
+1、PHP版本：必须PHP8.2以上，经测试支持：PHP 8.2/8.3/8.4/8.5。
 
-2、上传目录/Src/内所有源码到服务器，并设置网站的根目录指向运行目录/public/。（此为ThinkPHP6.0的要求）
+2、上传目录/Src/内所有源码到服务器，并设置网站的根目录指向运行目录/public/。（此为ThinkPHP8.1的要求）
 
 3、将/Database/目录里的.sql文件导入到MYSQL数据库。
 
@@ -100,9 +100,9 @@ caozha-admin是一个通用的PHP网站后台管理框架，基于开源的Think
 
 **开发手册**
 
-码云Wiki：[https://gitee.com/dengzhenhua/caozha-admin/wikis](https://gitee.com/dengzhenhua/caozha-admin/wikis)
+码云Wiki：[https://gitee.com/dengzhenhua/dc-admin/wikis](https://gitee.com/dengzhenhua/dc-admin/wikis)
 
-GitHub Wiki：[https://github.com/dengcao/caozha-admin/wiki](https://github.com/dengcao/caozha-admin/wiki)
+GitHub Wiki：[https://github.com/dengcao/dc-admin/wiki](https://github.com/dengcao/dc-admin/wiki)
 
 
 
@@ -110,7 +110,7 @@ GitHub Wiki：[https://github.com/dengcao/caozha-admin/wiki](https://github.com/
 
 **后台演示**
 
-[http://5300.cn/git/demo/caozha-admin/public/admin/index/login](http://5300.cn/git/demo/caozha-admin/public/admin/index/login)
+[http://5300.cn/git/demo/dc-admin/public/admin/index/login](http://5300.cn/git/demo/dc-admin/public/admin/index/login)
 
 管理员账号：dengcao   密码：123456 (请勿修改密码，如密码错误请联系我。演示后台已屏蔽上传功能。)
 
@@ -119,45 +119,43 @@ GitHub Wiki：[https://github.com/dengcao/caozha-admin/wiki](https://github.com/
 
 （可以自动适配电脑、平板和手机等不同客户端。）
 
-[http://5300.cn/git/demo/caozha-admin/public/index/comment/index](http://5300.cn/git/demo/caozha-admin/public/index/comment/index)
+[http://5300.cn/git/demo/dc-admin/public/index/comment/index](http://5300.cn/git/demo/dc-admin/public/index/comment/index)
 
 
 ### 更新方法
 
-**1.8.1升级到1.8.2的方法：**
+**1.9.2升级到2.0的方法：**
 
-将您项目文件里的layui路径，由“layui-v2.5.5”批量修改为“layui”，否则页面会错误。（从1.8.2版本开始已将layui更新至v2.6.8）
+1、下载dc-admin 2.0后，解压得到整个目录下的内容，然后将1.9.2版中Src/app/、Src/public/uploads/等2个目录下的内容复制进去，覆盖。
 
+2、分别打开Src/app/目录下的控制器、模型和模板等文件，将对应的变量和路径做以下修改（建议使用phpstorm按下面顺序做批量替换）：
 
-**1.7.2升级到1.8.1的方法：**
+第一步，“__CAOZHA-” 批量修改为：“__DENGCAO-”
 
-1、下载1.8.1后，删除Src/app/整个目录下的内容，然后将1.7.2版中Src/app/整个目录下的内容复制进去。
+第二步，“cz_cmt” 批量修改为：“dc_cmt”
 
-2、参照1.8.1中Src\app\admin\controller目录下的Roles.php和MemberGroup.php修改对应1.7.2版中的文件内容（主要是调换withAttr语句的顺序，如不修改，设置权限页面会报错）。
+第三步，“caozha.com” 批量修改为：“5300.cn”
 
+第四步，“caozha” 批量修改为：“dengcao”
 
-**1.7.0升级到1.7.1的方法：**
-
-
-1、执行下面MYSQL命令：
-
-
-```
-ALTER TABLE `cz_comment` CHANGE `addtime` `addtime` DATETIME NULL DEFAULT NULL COMMENT '评论时间';
-
-ALTER TABLE `cz_article` CHANGE `inputtime` `inputtime` DATETIME NULL DEFAULT NULL COMMENT '发布时间';
-
-ALTER TABLE `cz_member` CHANGE `regtime` `regtime` DATETIME NULL DEFAULT NULL COMMENT '注册时间';
-
-ALTER TABLE `cz_member` CHANGE `lasttime` `lasttime` DATETIME NULL DEFAULT NULL COMMENT '最后登录时间';
-```
+第五步，“cz_auth” 批量修改为：“dc_auth”
 
 
+3、登录数据库，将数据表前缀由“cz_”修改为：“dc_”，并修改\Src\config\database.php对应的前缀配置，如：'prefix' => env('DB_PREFIX', 'dc_')
 
-2、将1.7.1版/SRC/目录的源文件覆盖旧版本，注意修改数据库配置，还有清空缓存。
+4、修改每个应用下config目录的配置文件，对比一下新版，将旧项目的配置做适当的修改。
 
+5、如果升级后发现登录后台密码错误，可以修改数据表dc_administrators里的字段admin_password的值为：3d53d5757ce611e57abf98d9bfe57098  对应密码就是：123456
 
 ### 更新说明
+
+**版本2.0，主要更新：**
+
+1、为了提升开发体验和系统安全，更新TP框架到最新版本：ThinkPHP 8.1.4。
+
+2、修改了一些文件结构。
+
+3、预安装了一些常用的组件：phpword、phpspreadsheet、phpmailer、php-jwt、guzzle、nesbot/carbon、flysystem、monolog、mpdf、pdfparser、var-dumper等。
 
 
 **版本1.9.2，主要更新：**
@@ -269,7 +267,7 @@ ALTER TABLE `cz_member` CHANGE `lasttime` `lasttime` DATETIME NULL DEFAULT NULL 
 
 ### 特别鸣谢
 
-caozha-admin使用了以下开源代码：
+dc-admin使用了以下开源代码：
 
 ThinkPHP、layui、layuimini、font-awesome、lgyPl、phpoffice、phpMailer等
 
@@ -279,9 +277,9 @@ ThinkPHP、layui、layuimini、font-awesome、lgyPl、phpoffice、phpMailer等
 
 支持本程序，请到Gitee和GitHub给我们点Star！
 
-Gitee：https://gitee.com/dengzhenhua/caozha-admin
+Gitee：https://gitee.com/dengzhenhua/dc-admin
 
-GitHub：https://github.com/dengcao/caozha-admin
+GitHub：https://github.com/dengcao/dc-admin
 
 ### 关于
 
@@ -292,9 +290,9 @@ GitHub：https://github.com/dengcao/caozha-admin
 
 ### 界面预览
 
-**1.8.1版预览：**
+**2.0版预览：**
 
-1.8.1版界面跟以前版本相同，可以通过修改public/static/admin/caozha/js/all.js文件中的layuimini_bgColorDefault值（0至11之间）来设置后台的默认主题界面。
+2.0版界面跟以前版本相同，可以通过修改public/static/admin/dengcao/js/all.js文件中的layuimini_bgColorDefault值（0至11之间）来设置后台的默认主题界面。
 
 
 **1.7.0版预览：**

@@ -11,7 +11,10 @@
 
 namespace Symfony\Component\VarDumper\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,18 +35,16 @@ use Symfony\Component\VarDumper\Server\DumpServer;
  *
  * @final
  */
+#[AsCommand(name: 'server:dump', description: 'Start a dump server that collects and displays dumps in a single place')]
 class ServerDumpCommand extends Command
 {
-    protected static $defaultName = 'server:dump';
-
-    private $server;
-
     /** @var DumpDescriptorInterface[] */
-    private $descriptors;
+    private array $descriptors;
 
-    public function __construct(DumpServer $server, array $descriptors = [])
-    {
-        $this->server = $server;
+    public function __construct(
+        private DumpServer $server,
+        array $descriptors = [],
+    ) {
         $this->descriptors = $descriptors + [
             'cli' => new CliDescriptor(new CliDumper()),
             'html' => new HtmlDescriptor(new HtmlDumper()),
@@ -52,25 +53,22 @@ class ServerDumpCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
-        $availableFormats = implode(', ', array_keys($this->descriptors));
-
         $this
-            ->addOption('format', null, InputOption::VALUE_REQUIRED, sprintf('The output format (%s)', $availableFormats), 'cli')
-            ->setDescription('Start a dump server that collects and displays dumps in a single place')
+            ->addOption('format', null, InputOption::VALUE_REQUIRED, \sprintf('The output format (%s)', implode(', ', $this->getAvailableFormats())), 'cli')
             ->setHelp(<<<'EOF'
-<info>%command.name%</info> starts a dump server that collects and displays
-dumps in a single place for debugging you application:
+                <info>%command.name%</info> starts a dump server that collects and displays
+                dumps in a single place for debugging you application:
 
-  <info>php %command.full_name%</info>
+                  <info>php %command.full_name%</info>
 
-You can consult dumped data in HTML format in your browser by providing the <comment>--format=html</comment> option
-and redirecting the output to a file:
+                You can consult dumped data in HTML format in your browser by providing the <info>--format=html</info> option
+                and redirecting the output to a file:
 
-  <info>php %command.full_name% --format="html" > dump.html</info>
+                  <info>php %command.full_name% --format="html" > dump.html</info>
 
-EOF
+                EOF
             )
         ;
     }
@@ -81,7 +79,7 @@ EOF
         $format = $input->getOption('format');
 
         if (!$descriptor = $this->descriptors[$format] ?? null) {
-            throw new InvalidArgumentException(sprintf('Unsupported format "%s".', $format));
+            throw new InvalidArgumentException(\sprintf('Unsupported format "%s".', $format));
         }
 
         $errorIo = $io->getErrorStyle();
@@ -89,7 +87,7 @@ EOF
 
         $this->server->start();
 
-        $errorIo->success(sprintf('Server listening on %s', $this->server->getHost()));
+        $errorIo->success(\sprintf('Server listening on %s', $this->server->getHost()));
         $errorIo->comment('Quit the server with CONTROL-C.');
 
         $this->server->listen(function (Data $data, array $context, int $clientId) use ($descriptor, $io) {
@@ -97,5 +95,17 @@ EOF
         });
 
         return 0;
+    }
+
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestOptionValuesFor('format')) {
+            $suggestions->suggestValues($this->getAvailableFormats());
+        }
+    }
+
+    private function getAvailableFormats(): array
+    {
+        return array_keys($this->descriptors);
     }
 }

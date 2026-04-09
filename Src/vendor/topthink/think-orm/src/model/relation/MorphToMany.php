@@ -1,13 +1,15 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+declare (strict_types = 1);
 
 namespace think\model\relation;
 
@@ -15,56 +17,59 @@ use Closure;
 use Exception;
 use think\db\BaseQuery as Query;
 use think\db\Raw;
-use think\Model;
+use think\model\contract\Modelable as Model;
 use think\model\Pivot;
 
 /**
- * 多态多对多关联
+ * 多态多对多关联.
  */
 class MorphToMany extends BelongsToMany
 {
-
     /**
-     * 多态关系的模型名映射别名的数组
+     * 多态关系的模型名映射别名的数组.
      *
      * @var array
      */
     protected static $morphMap = [];
 
     /**
-     * 多态字段名
+     * 多态字段名.
+     *
      * @var string
      */
     protected $morphType;
 
     /**
-     * 多态模型名
+     * 多态模型名.
+     *
      * @var string
      */
     protected $morphClass;
 
     /**
-     * 是否反向关联
+     * 是否反向关联.
+     *
      * @var bool
      */
     protected $inverse;
 
     /**
-     * 架构函数
-     * @access public
-     * @param  Model  $parent    上级模型对象
-     * @param  string $model     模型名
-     * @param  string $middle    中间表名/模型名
-     * @param  string $morphKey  关联外键
-     * @param  string $morphType 多态字段名
-     * @param  string $localKey  当前模型关联键
-     * @param  bool   $inverse   反向关联
+     * 架构函数.
+     *
+     * @param Model  $parent    上级模型对象
+     * @param string $model     模型名
+     * @param string $middle    中间表名/模型名
+     * @param string $morphKey  关联外键
+     * @param string $morphType 多态字段名
+     * @param string $localKey  当前模型关联键
+     * @param bool   $inverse   反向关联
      */
     public function __construct(Model $parent, string $model, string $middle, string $morphType, string $morphKey, string $localKey, bool $inverse = false)
     {
-        $this->morphType  = $morphType;
-        $this->inverse    = $inverse;
-        $this->morphClass = $inverse ? $model : get_class($parent);
+        $this->morphType    = $morphType;
+        $this->inverse      = $inverse;
+        $this->morphClass   = $inverse ? $model : get_class($parent);
+
         if (isset(static::$morphMap[$this->morphClass])) {
             $this->morphClass = static::$morphMap[$this->morphClass];
         }
@@ -76,19 +81,20 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 预载入关联查询（数据集）
-     * @access public
-     * @param  array   $resultSet   数据集
-     * @param  string  $relation    当前关联名
-     * @param  array   $subRelation 子关联名
-     * @param  Closure $closure     闭包
-     * @param  array   $cache       关联缓存
+     * 预载入关联查询（数据集）.
+     *
+     * @param array   $resultSet   数据集
+     * @param string  $relation    当前关联名
+     * @param array   $subRelation 子关联名
+     * @param Closure $closure     闭包
+     * @param array   $cache       关联缓存
+     *
      * @return void
      */
-    public function eagerlyResultSet(array &$resultSet, string $relation, array $subRelation, Closure $closure = null, array $cache = []): void
+    public function eagerlyResultSet(array &$resultSet, string $relation, array $subRelation, ?Closure $closure = null, array $cache = []): void
     {
-        $pk    = $resultSet[0]->getPk();
-        $range = [];
+        $pk     = $resultSet[0]->getPk();
+        $range  = [];
 
         foreach ($resultSet as $result) {
             // 获取关联外键列表
@@ -100,9 +106,9 @@ class MorphToMany extends BelongsToMany
         if (!empty($range)) {
             // 查询关联数据
             $data = $this->eagerlyManyToMany([
-                ['pivot.' . $this->localKey, 'in', $range],
+                ['pivot.' . $this->localKey, 'in', array_unique($range)],
                 ['pivot.' . $this->morphType, '=', $this->morphClass],
-            ], $subRelation, $closure, $cache);
+            ], $subRelation, $closure, $cache, true);
 
             // 关联数据封装
             foreach ($resultSet as $result) {
@@ -110,22 +116,23 @@ class MorphToMany extends BelongsToMany
                     $data[$result->$pk] = [];
                 }
 
-                $result->setRelation($relation, $this->resultSetBuild($data[$result->$pk], clone $this->parent));
+                $result->setRelation($relation, $this->resultSetBuild($data[$result->$pk]));
             }
         }
     }
 
     /**
-     * 预载入关联查询（单个数据）
-     * @access public
-     * @param  Model   $result      数据对象
-     * @param  string  $relation    当前关联名
-     * @param  array   $subRelation 子关联名
-     * @param  Closure $closure     闭包
-     * @param  array   $cache       关联缓存
+     * 预载入关联查询（单个数据）.
+     *
+     * @param Model   $result      数据对象
+     * @param string  $relation    当前关联名
+     * @param array   $subRelation 子关联名
+     * @param Closure $closure     闭包
+     * @param array   $cache       关联缓存
+     *
      * @return void
      */
-    public function eagerlyResult(Model $result, string $relation, array $subRelation, Closure $closure = null, array $cache = []): void
+    public function eagerlyResult(Model $result, string $relation, array $subRelation, ?Closure $closure = null, array $cache = []): void
     {
         $pk = $result->getPk();
 
@@ -142,21 +149,22 @@ class MorphToMany extends BelongsToMany
                 $data[$pk] = [];
             }
 
-            $result->setRelation($relation, $this->resultSetBuild($data[$pk], clone $this->parent));
+            $result->setRelation($relation, $this->resultSetBuild($data[$pk]));
         }
     }
 
     /**
      * 关联统计
-     * @access public
-     * @param  Model   $result  数据对象
-     * @param  Closure $closure 闭包
-     * @param  string  $aggregate 聚合查询方法
-     * @param  string  $field 字段
-     * @param  string  $name 统计字段别名
-     * @return integer
+     *
+     * @param Model   $result    数据对象
+     * @param Closure $closure   闭包
+     * @param string  $aggregate 聚合查询方法
+     * @param string  $field     字段
+     * @param string  $name      统计字段别名
+     *
+     * @return int
      */
-    public function relationCount(Model $result, Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): float
+    public function relationCount(Model $result, ?Closure $closure = null, string $aggregate = 'count', string $field = '*', ?string &$name = null)
     {
         $pk = $result->getPk();
 
@@ -164,59 +172,55 @@ class MorphToMany extends BelongsToMany
             return 0;
         }
 
-        $pk = $result->$pk;
-
         if ($closure) {
-            $closure($this->getClosureType($closure), $name);
+            $closure($this->query, $name);
         }
 
         return $this->belongsToManyQuery($this->foreignKey, $this->localKey, [
-            ['pivot.' . $this->localKey, '=', $pk],
+            ['pivot.' . $this->localKey, '=', $result->$pk],
             ['pivot.' . $this->morphType, '=', $this->morphClass],
         ])->$aggregate($field);
     }
 
     /**
-     * 获取关联统计子查询
-     * @access public
-     * @param  Closure $closure 闭包
-     * @param  string  $aggregate 聚合查询方法
-     * @param  string  $field 字段
-     * @param  string  $name 统计字段别名
+     * 获取关联统计子查询.
+     *
+     * @param Closure $closure   闭包
+     * @param string  $aggregate 聚合查询方法
+     * @param string  $field     字段
+     * @param string  $name      统计字段别名
+     *
      * @return string
      */
-    public function getRelationCountQuery(Closure $closure = null, string $aggregate = 'count', string $field = '*', string &$name = null): string
+    public function getRelationCountQuery(?Closure $closure = null, string $aggregate = 'count', string $field = '*', ?string &$name = null): string
     {
         if ($closure) {
-            $closure($this->getClosureType($closure), $name);
+            $closure($this->query, $name);
         }
 
         return $this->belongsToManyQuery($this->foreignKey, $this->localKey, [
-            ['pivot.' . $this->localKey, 'exp', new Raw('=' . $this->parent->db(false)->getTable() . '.' . $this->parent->getPk())],
+            ['pivot.' . $this->localKey, 'exp', new Raw('=' . $this->parent->getTable(true) . '.' . $this->parent->getPk())],
             ['pivot.' . $this->morphType, '=', $this->morphClass],
         ])->fetchSql()->$aggregate($field);
     }
 
     /**
-     * BELONGS TO MANY 关联查询
-     * @access protected
-     * @param  string $foreignKey 关联模型关联键
-     * @param  string $localKey   当前模型关联键
-     * @param  array  $condition  关联查询条件
+     * BELONGS TO MANY 关联查询.
+     *
+     * @param string $foreignKey 关联模型关联键
+     * @param string $localKey   当前模型关联键
+     * @param array  $condition  关联查询条件
+     *
      * @return Query
      */
     protected function belongsToManyQuery(string $foreignKey, string $localKey, array $condition = []): Query
     {
         // 关联查询封装
-        $tableName = $this->query->getTable();
-        $table     = $this->pivot->db()->getTable();
+        $tableName  = $this->query->getTable();
+        $table      = $this->pivot->db()->getTable();
+        $fields     = $this->getQueryFields($tableName);
 
-        if ($this->withoutField) {
-            $this->query->withoutField($this->withoutField);
-        }
-
-        $fields = $this->getQueryFields($tableName);
-        $query  = $this->query
+        $query = $this->query
             ->field($fields)
             ->tableField(true, $table, 'pivot', 'pivot__');
 
@@ -230,46 +234,47 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 多对多 关联模型预查询
-     * @access protected
-     * @param  array   $where       关联预查询条件
-     * @param  array   $subRelation 子关联
-     * @param  Closure $closure     闭包
-     * @param  array   $cache       关联缓存
+     * 多对多 关联模型预查询.
+     *
+     * @param array   $where       关联预查询条件
+     * @param array   $subRelation 子关联
+     * @param Closure $closure     闭包
+     * @param array   $cache       关联缓存
+     * @param bool    $collection  是否数据集查询
+     *
      * @return array
      */
-    protected function eagerlyManyToMany(array $where, array $subRelation = [], Closure $closure = null, array $cache = []): array
+    protected function eagerlyManyToMany(array $where, array $subRelation = [], ?Closure $closure = null, array $cache = [], bool $collection = false): array
     {
         if ($closure) {
-            $closure($this->getClosureType($closure));
+            $closure($this->query);
         }
 
-        $withLimit = $this->query->getOptions('limit');
-        if ($withLimit) {
+        $withLimit = $this->query->getOption('limit');
+        if ($withLimit && $collection) {
             $this->query->removeOption('limit');
+        }
+
+        if ($this->isOneofMany) {
+            // 仅获取一条关联数据
+            if (!$collection) {
+                $this->query->limit(1);
+            } else {
+                $withLimit = 1;
+            }
         }
 
         // 预载入关联查询 支持嵌套预载入
         $list = $this->belongsToManyQuery($this->foreignKey, $this->localKey, $where)
             ->with($subRelation)
             ->cache($cache[0] ?? false, $cache[1] ?? null, $cache[2] ?? null)
-            ->select();
+            ->lazy();
 
         // 组装模型数据
-        $data      = [];
+        $data = [];
         foreach ($list as $set) {
-            $pivot = [];
-            foreach ($set->getData() as $key => $val) {
-                if (strpos($key, '__')) {
-                    [$name, $attr] = explode('__', $key, 2);
-                    if ('pivot' == $name) {
-                        $pivot[$attr] = $val;
-                        unset($set->$key);
-                    }
-                }
-            }
-
-            $key = $pivot[$this->localKey];
+            $pivot = $set->getRelation('pivot');
+            $key   = $pivot[$this->localKey];
 
             if ($withLimit && isset($data[$key]) && count($data[$key]) >= $withLimit) {
                 continue;
@@ -284,10 +289,11 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 附加关联的一个中间表数据
-     * @access public
-     * @param  mixed $data  数据 可以使用数组、关联模型对象 或者 关联对象的主键
-     * @param  array $pivot 中间表额外数据
+     * 附加关联的一个中间表数据.
+     *
+     * @param mixed $data  数据 可以使用数组、关联模型对象 或者 关联对象的主键
+     * @param array $pivot 中间表额外数据
+     *
      * @return array|Pivot
      */
     public function attach($data, array $pivot = [])
@@ -297,8 +303,8 @@ class MorphToMany extends BelongsToMany
                 $id = $data;
             } else {
                 // 保存关联表数据
-                $model = new $this->model;
-                $id    = $model->insertGetId($data);
+                $model = new $this->model();
+                $id = $model->insertGetId($data);
             }
         } elseif (is_numeric($data) || is_string($data)) {
             // 根据关联表主键直接写入中间表
@@ -312,18 +318,14 @@ class MorphToMany extends BelongsToMany
             // 保存中间表数据
             $pivot[$this->localKey]  = $this->parent->getKey();
             $pivot[$this->morphType] = $this->morphClass;
-            $ids                     = (array) $id;
 
             $result = [];
-
-            foreach ($ids as $id) {
+            foreach ((array) $ids as $id) {
                 $pivot[$this->foreignKey] = $id;
+                $object = $this->newPivot();
+                $object->replace()->save($pivot);
 
-                $this->pivot->replace()
-                    ->exists(false)
-                    ->data([])
-                    ->save($pivot);
-                $result[] = $this->newPivot($pivot);
+                $result[] = $object;
             }
 
             if (count($result) == 1) {
@@ -338,9 +340,10 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 判断是否存在关联数据
-     * @access public
-     * @param  mixed $data 数据 可以使用关联模型对象 或者 关联对象的主键
+     * 判断是否存在关联数据.
+     *
+     * @param mixed $data 数据 可以使用关联模型对象 或者 关联对象的主键
+     *
      * @return Pivot|false
      */
     public function attached($data)
@@ -361,11 +364,12 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 解除关联的一个中间表数据
-     * @access public
-     * @param  integer|array $data        数据 可以使用关联对象的主键
-     * @param  bool          $relationDel 是否同时删除关联表数据
-     * @return integer
+     * 解除关联的一个中间表数据.
+     *
+     * @param int|array $data        数据 可以使用关联对象的主键
+     * @param bool      $relationDel 是否同时删除关联表数据
+     *
+     * @return int
      */
     public function detach($data = null, bool $relationDel = false): int
     {
@@ -389,7 +393,7 @@ class MorphToMany extends BelongsToMany
             $pivot[] = [$this->foreignKey, is_array($id) ? 'in' : '=', $id];
         }
 
-        $result = $this->pivot->where($pivot)->delete();
+        $result = $this->newPivot()->where($pivot)->delete();
 
         // 删除关联表数据
         if (isset($id) && $relationDel) {
@@ -401,10 +405,11 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 数据同步
-     * @access public
-     * @param  array $ids
-     * @param  bool  $detaching
+     * 数据同步.
+     *
+     * @param array $ids
+     * @param bool  $detaching
+     *
      * @return array
      */
     public function sync(array $ids, bool $detaching = true): array
@@ -441,7 +446,9 @@ class MorphToMany extends BelongsToMany
             if (!in_array($id, $current)) {
                 $this->attach($id, $attributes);
                 $changes['attached'][] = $id;
-            } elseif (count($attributes) > 0 && $this->attach($id, $attributes)) {
+            } elseif (count($attributes) > 0) {
+                $this->detach($id);
+                $this->attach($id, $attributes);
                 $changes['updated'][] = $id;
             }
         }
@@ -450,15 +457,15 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 执行基础查询（仅执行一次）
-     * @access protected
+     * 执行基础查询（仅执行一次）.
+     *
      * @return void
      */
     protected function baseQuery(): void
     {
         if (empty($this->baseQuery)) {
             $foreignKey = $this->foreignKey;
-            $localKey   = $this->localKey;
+            $localKey = $this->localKey;
 
             // 关联查询
             $this->belongsToManyQuery($foreignKey, $localKey, [
@@ -471,20 +478,20 @@ class MorphToMany extends BelongsToMany
     }
 
     /**
-     * 设置或获取多态关系的模型名映射别名的数组
+     * 设置或获取多态关系的模型名映射别名的数组.
      *
-     * @param  array|null  $map
-     * @param  bool  $merge
+     * @param array|null $map
+     * @param bool       $merge
+     *
      * @return array
      */
-    public static function morphMap(array $map = null, $merge = true): array
+    public static function morphMap(?array $map = null, $merge = true): array
     {
         if (is_array($map)) {
             static::$morphMap = $merge && static::$morphMap
-            ? $map + static::$morphMap : $map;
+                ? $map + static::$morphMap : $map;
         }
 
         return static::$morphMap;
     }
-
 }

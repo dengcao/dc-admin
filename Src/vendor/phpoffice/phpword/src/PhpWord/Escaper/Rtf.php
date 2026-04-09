@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,7 +12,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
@@ -46,14 +47,15 @@ class Rtf extends AbstractEscaper
 
     /**
      * @see http://www.randomchaos.com/documents/?source=php_and_unicode
-     * @param string $input
+     *
+     * @param ?string $input
      */
     protected function escapeSingleValue($input)
     {
         $escapedValue = '';
 
         $numberOfBytes = 1;
-        $bytes = array();
+        $bytes = [];
         for ($i = 0; $i < strlen($input); ++$i) {
             $character = $input[$i];
             $asciiCode = ord($character);
@@ -87,7 +89,7 @@ class Rtf extends AbstractEscaper
                     }
 
                     $numberOfBytes = 1;
-                    $bytes = array();
+                    $bytes = [];
                 }
             }
         }

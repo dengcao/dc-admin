@@ -10,10 +10,8 @@ class File
 {
     /**
      * Use Temp or File Upload Temp for temporary files.
-     *
-     * @var bool
      */
-    protected static $useUploadTempDirectory = false;
+    protected static bool $useUploadTempDirectory = false;
 
     /**
      * Set the flag indicating whether the File Upload Temp directory should be used for temporary files.
@@ -94,9 +92,9 @@ class File
             $pathArray = explode('/', $filename);
             while (in_array('..', $pathArray) && $pathArray[0] != '..') {
                 $iMax = count($pathArray);
-                for ($i = 0; $i < $iMax; ++$i) {
-                    if ($pathArray[$i] == '..' && $i > 0) {
-                        unset($pathArray[$i], $pathArray[$i - 1]);
+                for ($i = 1; $i < $iMax; ++$i) {
+                    if ($pathArray[$i] == '..') {
+                        array_splice($pathArray, $i - 1, 2);
 
                         break;
                     }
@@ -132,12 +130,7 @@ class File
 
     public static function temporaryFilename(): string
     {
-        $filename = tempnam(self::sysGetTempDir(), 'phpspreadsheet');
-        if ($filename === false) {
-            throw new Exception('Could not create temporary file');
-        }
-
-        return $filename;
+        return tempnam(self::sysGetTempDir(), 'phpspreadsheet') ?: throw new Exception('Could not create temporary file');
     }
 
     /**
@@ -145,12 +138,8 @@ class File
      */
     public static function assertFile(string $filename, string $zipMember = ''): void
     {
-        if (!is_file($filename)) {
-            throw new ReaderException('File "' . $filename . '" does not exist.');
-        }
-
-        if (!is_readable($filename)) {
-            throw new ReaderException('Could not open "' . $filename . '" for reading.');
+        if (!is_file($filename) || !is_readable($filename)) {
+            throw new ReaderException('File "' . $filename . '" does not exist or is not readable.');
         }
 
         if ($zipMember !== '') {
@@ -170,10 +159,7 @@ class File
      */
     public static function testFileNoThrow(string $filename, ?string $zipMember = null): bool
     {
-        if (!is_file($filename)) {
-            return false;
-        }
-        if (!is_readable($filename)) {
+        if (!is_file($filename) || !is_readable($filename)) {
             return false;
         }
         if ($zipMember === null) {

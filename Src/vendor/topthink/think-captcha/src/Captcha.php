@@ -237,7 +237,7 @@ class Captcha
         // 输出图像
         imagepng($this->im);
         $content = ob_get_clean();
-        imagedestroy($this->im);
+//        imagedestroy($this->im);
 
         // API调用模式
         if ($this->api) {
@@ -348,6 +348,6 @@ class Captcha
         // Resample
         $bgImage = @imagecreatefromjpeg($gb);
         @imagecopyresampled($this->im, $bgImage, 0, 0, 0, 0, $this->imageW, $this->imageH, $width, $height);
-        @imagedestroy($bgImage);
+//        @imagedestroy($bgImage);
     }
 }

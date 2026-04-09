@@ -1,8 +1,9 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2019 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2025 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -13,30 +14,31 @@ declare (strict_types = 1);
 namespace think\db\concern;
 
 /**
- * 数据字段信息
+ * 数据字段信息.
  */
 trait TableFieldInfo
 {
-
     /**
-     * 获取数据表字段信息
-     * @access public
+     * 获取数据表字段信息.
+     *
      * @param string $tableName 数据表名
+     *
      * @return array
      */
-    public function getTableFields($tableName = ''): array
+    public function getTableFields(string $tableName = ''): array
     {
-        if ('' == $tableName) {
-            $tableName = $this->getTable();
+        if ('' == $tableName && !empty($this->options['field_type'])) {
+            return array_keys($this->options['field_type']);
         }
 
-        return $this->connection->getTableFields($tableName);
+        return $this->connection->getTableFields($tableName ?: $this->getTable());
     }
 
     /**
-     * 获取详细字段类型信息
-     * @access public
+     * 获取详细字段类型信息.
+     *
      * @param string $tableName 数据表名称
+     *
      * @return array
      */
     public function getFields(string $tableName = ''): array
@@ -45,8 +47,8 @@ trait TableFieldInfo
     }
 
     /**
-     * 获取字段类型信息
-     * @access public
+     * 获取字段类型信息.
+     *
      * @return array
      */
     public function getFieldsType(): array
@@ -58,10 +60,16 @@ trait TableFieldInfo
         return $this->connection->getFieldsType($this->getTable());
     }
 
+    public function getType(): array
+    {
+        return $this->getFieldsType();
+    }
+
     /**
-     * 获取字段类型信息
-     * @access public
+     * 获取字段类型信息.
+     *
      * @param string $field 字段名
+     *
      * @return string|null
      */
     public function getFieldType(string $field)
@@ -72,8 +80,8 @@ trait TableFieldInfo
     }
 
     /**
-     * 获取字段类型信息
-     * @access public
+     * 获取字段类型信息.
+     *
      * @return array
      */
     public function getFieldsBindType(): array
@@ -84,9 +92,10 @@ trait TableFieldInfo
     }
 
     /**
-     * 获取字段类型信息
-     * @access public
+     * 获取字段类型信息.
+     *
      * @param string $field 字段名
+     *
      * @return int
      */
     public function getFieldBindType(string $field): int
@@ -95,5 +104,4 @@ trait TableFieldInfo
 
         return $this->connection->getFieldBindType($fieldType ?: '');
     }
-
 }

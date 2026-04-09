@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PHPWord - A pure PHP library for reading and writing
  * word processing documents.
@@ -11,12 +12,13 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
- * @copyright   2010-2018 PHPWord contributors
+ *
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
 
 namespace PhpOffice\PhpWord\Element;
 
+use Exception;
 use PhpOffice\PhpWord\ComplexType\FootnoteProperties;
 use PhpOffice\PhpWord\Style\Section as SectionStyle;
 
@@ -28,38 +30,38 @@ class Section extends AbstractContainer
     protected $container = 'Section';
 
     /**
-     * Section style
+     * Section style.
      *
-     * @var \PhpOffice\PhpWord\Style\Section
+     * @var ?SectionStyle
      */
     private $style;
 
     /**
-     * Section headers, indexed from 1, not zero
+     * Section headers, indexed from 1, not zero.
      *
      * @var Header[]
      */
-    private $headers = array();
+    private $headers = [];
 
     /**
-     * Section footers, indexed from 1, not zero
+     * Section footers, indexed from 1, not zero.
      *
      * @var Footer[]
      */
-    private $footers = array();
+    private $footers = [];
 
     /**
-     * The properties for the footnote of this section
+     * The properties for the footnote of this section.
      *
      * @var FootnoteProperties
      */
     private $footnoteProperties;
 
     /**
-     * Create new instance
+     * Create new instance.
      *
      * @param int $sectionCount
-     * @param null|array|\PhpOffice\PhpWord\Style $style
+     * @param null|array|\PhpOffice\PhpWord\Style|string $style
      */
     public function __construct($sectionCount, $style = null)
     {
@@ -76,17 +78,17 @@ class Section extends AbstractContainer
      *
      * @param array $style
      */
-    public function setStyle($style = null)
+    public function setStyle($style = null): void
     {
-        if (!is_null($style) && is_array($style)) {
+        if (null !== $style && is_array($style)) {
             $this->style->setStyleByArray($style);
         }
     }
 
     /**
-     * Get section style
+     * Get section style.
      *
-     * @return \PhpOffice\PhpWord\Style\Section
+     * @return ?SectionStyle
      */
     public function getStyle()
     {
@@ -94,7 +96,7 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Add header
+     * Add header.
      *
      * @since 0.10.0
      *
@@ -108,7 +110,7 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Add footer
+     * Add footer.
      *
      * @since 0.10.0
      *
@@ -122,7 +124,7 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Get header elements
+     * Get header elements.
      *
      * @return Header[]
      */
@@ -132,7 +134,7 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Get footer elements
+     * Get footer elements.
      *
      * @return Footer[]
      */
@@ -142,7 +144,7 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Get the footnote properties
+     * Get the footnote properties.
      *
      * @return FootnoteProperties
      */
@@ -152,25 +154,9 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Get the footnote properties
-     *
-     * @deprecated Use the `getFootnoteProperties` method instead
-     *
-     * @return FootnoteProperties
-     *
-     * @codeCoverageIgnore
+     * Set the footnote properties.
      */
-    public function getFootnotePropoperties()
-    {
-        return $this->footnoteProperties;
-    }
-
-    /**
-     * Set the footnote properties
-     *
-     * @param FootnoteProperties $footnoteProperties
-     */
-    public function setFootnoteProperties(FootnoteProperties $footnoteProperties = null)
+    public function setFootnoteProperties(?FootnoteProperties $footnoteProperties = null): void
     {
         $this->footnoteProperties = $footnoteProperties;
     }
@@ -200,27 +186,25 @@ class Section extends AbstractContainer
     }
 
     /**
-     * Add header/footer
+     * Add header/footer.
      *
      * @since 0.10.0
      *
      * @param string $type
      * @param bool $header
      *
-     * @throws \Exception
-     *
-     * @return Header|Footer
+     * @return Footer|Header
      */
     private function addHeaderFooter($type = Header::AUTO, $header = true)
     {
-        $containerClass = substr(get_class($this), 0, strrpos(get_class($this), '\\')) . '\\' .
+        $containerClass = substr(static::class, 0, strrpos(static::class, '\\') ?: 0) . '\\' .
             ($header ? 'Header' : 'Footer');
         $collectionArray = $header ? 'headers' : 'footers';
         $collection = &$this->$collectionArray;
 
-        if (in_array($type, array(Header::AUTO, Header::FIRST, Header::EVEN))) {
+        if (in_array($type, [Header::AUTO, Header::FIRST, Header::EVEN])) {
             $index = count($collection);
-            /** @var \PhpOffice\PhpWord\Element\AbstractContainer $container Type hint */
+            /** @var AbstractContainer $container Type hint */
             $container = new $containerClass($this->sectionId, ++$index, $type);
             $container->setPhpWord($this->phpWord);
 
@@ -228,80 +212,7 @@ class Section extends AbstractContainer
 
             return $container;
         }
-        throw new \Exception('Invalid header/footer type.');
-    }
 
-    /**
-     * Set section style
-     *
-     * @deprecated 0.12.0
-     *
-     * @param array $settings
-     *
-     * @codeCoverageIgnore
-     */
-    public function setSettings($settings = null)
-    {
-        $this->setStyle($settings);
-    }
-
-    /**
-     * Get section style
-     *
-     * @deprecated 0.12.0
-     *
-     * @return \PhpOffice\PhpWord\Style\Section
-     *
-     * @codeCoverageIgnore
-     */
-    public function getSettings()
-    {
-        return $this->getStyle();
-    }
-
-    /**
-     * Create header
-     *
-     * @deprecated 0.10.0
-     *
-     * @return Header
-     *
-     * @codeCoverageIgnore
-     */
-    public function createHeader()
-    {
-        return $this->addHeader();
-    }
-
-    /**
-     * Create footer
-     *
-     * @deprecated 0.10.0
-     *
-     * @return Footer
-     *
-     * @codeCoverageIgnore
-     */
-    public function createFooter()
-    {
-        return $this->addFooter();
-    }
-
-    /**
-     * Get footer
-     *
-     * @deprecated 0.10.0
-     *
-     * @return Footer
-     *
-     * @codeCoverageIgnore
-     */
-    public function getFooter()
-    {
-        if (empty($this->footers)) {
-            return null;
-        }
-
-        return $this->footers[1];
+        throw new Exception('Invalid header/footer type.');
     }
 }
