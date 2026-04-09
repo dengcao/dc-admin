@@ -153,7 +153,7 @@ GitHub Wiki：[https://github.com/dengcao/dc-admin/wiki](https://github.com/deng
 
 1、为了提升开发体验和系统安全，更新TP框架到最新版本：ThinkPHP 8.1.4。
 
-2、源码名称caozha-admin正式修改为：dc-admin，同时修改了一些文件结构。
+2、项目名称caozha-admin正式更名为：dc-admin，同时修改了一些文件结构。
 
 3、预安装了一些常用的组件：phpword、phpspreadsheet、phpmailer、php-jwt、guzzle、nesbot/carbon、flysystem、monolog、mpdf、pdfparser、var-dumper等。
 
