@@ -140,6 +140,12 @@ GitHub Wiki：[https://github.com/dengcao/dc-admin/wiki](https://github.com/deng
 
 第五步，“cz_auth” 批量修改为：“dc_auth”
 
+第六步，打开\Src\app\admin\common.php，大概107行，将“ $web_config_data = object_to_array($web_config->web_config); ” 修改为 “ $web_config_data=object_to_array(json_decode($web_config->web_config)); ”。
+
+第七步，打开\Src\app\admin\controller\WebConfig.php，大概33行，将“ $web_config_data=object_to_array($web_config->web_config); ” 修改为 “ $web_config_data=object_to_array(json_decode($web_config->web_config)); ”。
+
+第八步，打开\Src\app\admin\controller\WebConfig.php，大概49行，将“ $edit_data=array("web_config"=>$edit_data); ” 修改为 “ $edit_data=array("web_config"=>json_encode($edit_data)); ”。
+
 
 3、登录数据库，将数据表前缀由“cz_”修改为：“dc_”，并修改\Src\config\database.php对应的前缀配置，如：'prefix' => env('DB_PREFIX', 'dc_')
 
