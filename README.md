@@ -158,7 +158,7 @@ ALTER TABLE `cz_member` CHANGE `lasttime` `lasttime` DATETIME NULL DEFAULT NULL 
 
 
 ### 更新说明
-**版本1.9.2，主要更新：**
+**版本1.9.3，主要更新：**
 
 1、更新topthink/think-helper (v3.1.11 => v3.1.12)。
 
