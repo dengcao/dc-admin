@@ -86,7 +86,7 @@ class comment
         if (!is_numeric($page)) {
             $page = 1;
         }
-        $limit = $action["pageSize"];
+        $limit = isset($action["pageSize"]) ? $action["pageSize"] : 5;
         if (!is_numeric($limit)) {
             $limit = $this->cmt_config['cmt_pagesize'];//默认显示数目
         }

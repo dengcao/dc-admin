@@ -35,7 +35,11 @@ abstract class Coordinate
     public static function coordinateFromString(string $cellAddress): array
     {
         if (preg_match(self::A1_COORDINATE_REGEX, $cellAddress, $matches)) {
-            return [$matches['col'], $matches['row']];
+            $row = (int) ltrim($matches['row'], '$');
+            // reluctantly allow row 0 due to regression problems
+            if (/*$row > 0 &&*/ $row <= AddressRange::MAX_ROW) {
+                return [$matches['col'], $matches['row']];
+            }
         } elseif (self::coordinateIsRange($cellAddress)) {
             throw new Exception('Cell coordinate string can not be a range of cells');
         } elseif ($cellAddress == '') {
@@ -186,7 +190,7 @@ abstract class Coordinate
     /**
      * Build range from coordinate strings.
      *
-     * @param mixed[] $range Array containing one or more arrays containing one or two coordinate strings
+     * @param array<array<string>> $range Array containing one or more arrays containing one or two coordinate strings
      *
      * @return string String representation of $pRange
      */
@@ -206,6 +210,7 @@ abstract class Coordinate
             $range[$i] = implode(':', $range[$i]);
         }
 
+        /** @var array<string> $range */
         return implode(',', $range);
     }
 
@@ -420,22 +425,28 @@ abstract class Coordinate
                 $indexCache[$columnAddress] = $columnLookup[$columnAddress];
 
                 return $indexCache[$columnAddress];
-            } elseif (!isset($columnAddress[2])) {
+            }
+            if (!isset($columnAddress[2])) {
                 $indexCache[$columnAddress] = $columnLookup[$columnAddress[0]] * 26
                     + $columnLookup[$columnAddress[1]];
 
                 return $indexCache[$columnAddress];
-            } elseif (!isset($columnAddress[3])) {
-                $indexCache[$columnAddress] = $columnLookup[$columnAddress[0]] * 676
+            }
+            if (!isset($columnAddress[3])) {
+                $temp = $columnLookup[$columnAddress[0]] * 676
                     + $columnLookup[$columnAddress[1]] * 26
                     + $columnLookup[$columnAddress[2]];
 
-                return $indexCache[$columnAddress];
+                if ($temp <= AddressRange::MAX_COLUMN_INT) {
+                    $indexCache[$columnAddress] = $temp;
+
+                    return $temp;
+                }
             }
         }
 
         throw new Exception(
-            'Column string index can not be ' . ((isset($columnAddress[0])) ? 'longer than 3 characters' : 'empty')
+            'Column string index can not be ' . ((isset($columnAddress[0])) ? ('beyond ' . AddressRange::MAX_COLUMN) : 'empty')
         );
     }
 
@@ -446,11 +457,19 @@ abstract class Coordinate
      *
      * @param int|numeric-string $columnIndex Column index (A = 1)
      */
-    public static function stringFromColumnIndex(int|string $columnIndex): string
+    public static function stringFromColumnIndex(int|string $columnIndex, bool $tolerateZero = false): string
     {
         /** @var string[] */
         static $indexCache = [];
+        $columnIndex2 = (int) $columnIndex;
+        if ($columnIndex2 === 0 && $tolerateZero) {
+            return '';
+        }
+        if ($columnIndex2 < 1 || $columnIndex2 > AddressRange::MAX_COLUMN_INT) {
+            throw new Exception("Invalid column index $columnIndex");
+        }
 
+        $columnIndex = $columnIndex2;
         if (!isset($indexCache[$columnIndex])) {
             $indexValue = $columnIndex;
             $base26 = '';
@@ -503,8 +522,7 @@ abstract class Coordinate
         }
 
         /** @var string[] */
-        $cellList = array_merge(...$cells); //* @phpstan-ignore-line
-        // Unsure how to satisfy phpstan in line above
+        $cellList = array_merge(...$cells); //* @phpstan-ignore argument.type (Unsure how to satisfy phpstan)
 
         $retVal = array_map(
             fn (string $cellAddress) => ($worksheet !== '') ? "{$quoted}{$worksheet}{$quoted}!{$cellAddress}" : $cellAddress,
@@ -516,7 +534,7 @@ abstract class Coordinate
 
     /**
      * @param mixed[] $operators
-     * @param mixed[][] $cells
+     * @param string[][] $cells
      *
      * @return mixed[]
      */
@@ -554,7 +572,7 @@ abstract class Coordinate
             $row = 0;
             sscanf($coordinate, '%[A-Z]%d', $column, $row);
             /** @var int $row */
-            $key = (--$row * 16384) + self::columnIndexFromString((string) $column);
+            $key = (--$row * AddressRange::MAX_COLUMN_INT) + self::columnIndexFromString((string) $column);
             $sortKeys[$key] = $coordinate;
         }
         ksort($sortKeys);
@@ -628,10 +646,8 @@ abstract class Coordinate
 
             // Range...
             [$rangeStart, $rangeEnd] = $range;
-            [$startColumn, $startRow] = self::coordinateFromString($rangeStart);
-            [$endColumn, $endRow] = self::coordinateFromString($rangeEnd);
-            $startColumnIndex = self::columnIndexFromString($startColumn);
-            $endColumnIndex = self::columnIndexFromString($endColumn);
+            [$startColumnIndex, $startRow, $startColumn] = self::indexesFromString($rangeStart);
+            [$endColumnIndex, $endRow, $endColumn] = self::indexesFromString($rangeEnd);
             ++$endColumnIndex;
 
             // Current data
@@ -642,8 +658,6 @@ abstract class Coordinate
 
             // Loop cells
             while ($currentColumnIndex < $endColumnIndex) {
-                /** @var int $currentRow */
-                /** @var int $endRow */
                 while ($currentRow <= $endRow) {
                     $returnValue[] = self::stringFromColumnIndex($currentColumnIndex) . $currentRow;
                     ++$currentRow;
@@ -726,7 +740,7 @@ abstract class Coordinate
                 }
             }
 
-            if ($rowStart !== null) { // @phpstan-ignore-line
+            if ($rowStart !== null) {
                 if ($rowStart == $rowEnd) {
                     $ranges[] = $hashedValue->col . $rowStart;
                 } else {

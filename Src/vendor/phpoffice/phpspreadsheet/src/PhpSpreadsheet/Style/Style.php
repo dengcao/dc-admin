@@ -3,6 +3,7 @@
 namespace PhpOffice\PhpSpreadsheet\Style;
 
 use PhpOffice\PhpSpreadsheet\Calculation\Functions;
+use PhpOffice\PhpSpreadsheet\Cell\AddressRange;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Chart\ChartColor;
 use PhpOffice\PhpSpreadsheet\Exception;
@@ -132,6 +133,13 @@ class Style extends Supervisor
         return $this->getActiveSheet()->getParentOrThrow();
     }
 
+    private const REGEX_WHOLE_COLUMN = '/^[A-Z]+1:[A-Z]+'
+        . AddressRange::MAX_ROW
+        . '$/';
+    private const REGEX_WHOLE_ROW = '/^A\d+:'
+        . AddressRange::MAX_COLUMN
+        . '\d+$/';
+
     /**
      * Build style array from subcomponents.
      *
@@ -193,6 +201,18 @@ class Style extends Supervisor
     {
         if ($this->isSupervisor) {
             $pRange = $this->getSelectedCells();
+            if (str_contains($pRange, ',')) {
+                $ranges = explode(',', $pRange);
+                $sheet = $this->getActiveSheet();
+                foreach ($ranges as $range) {
+                    $sheet
+                        ->setSelectedCells(trim($range));
+                    $this->applyFromArray($styleArray, $advancedBorders);
+                }
+                $sheet->setSelectedCells($pRange);
+
+                return $this;
+            }
 
             // Uppercase coordinate and strip any Worksheet reference from the selected range
             $pRange = strtoupper($pRange);
@@ -358,12 +378,12 @@ class Style extends Supervisor
 
             // SIMPLE MODE:
             // Selection type, inspect
-            if (preg_match('/^[A-Z]+1:[A-Z]+1048576$/', $pRange)) {
+            if (preg_match(self::REGEX_WHOLE_COLUMN, $pRange)) {
                 $selectionType = 'COLUMN';
 
                 // Enable caching of styles
                 self::$cachedStyles = ['hashByObjId' => [], 'styleByHash' => []];
-            } elseif (preg_match('/^A\d+:XFD\d+$/', $pRange)) {
+            } elseif (preg_match(self::REGEX_WHOLE_ROW, $pRange)) {
                 $selectionType = 'ROW';
 
                 // Enable caching of styles

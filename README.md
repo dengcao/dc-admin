@@ -1,4 +1,4 @@
-# dc-admin 后台管理框架 2.0
+# dc-admin 后台管理框架 2.0.1
 
 dc-admin（原caozha-admin）是一个通用的PHP网站后台管理框架，基于开源的ThinkPHP8.1开发，特点：易上手，零门槛，界面清爽极简，极便于二次开发。
 
@@ -32,7 +32,7 @@ dc-admin（原caozha-admin）是一个通用的PHP网站后台管理框架，基
 
 **开发环境**
 
-本人开发此系统使用的本地环境是：[phpstudy8.1集成工具（离线版，有需要点击下载）](https://gitee.com/dengzhenhua/phpstudy)，phpMyAdmin 4.8.5，Apache2.4.39（或Nginx1.15.11），PHP8.2，MySQL5.7.26。
+本人开发此系统使用的本地环境是：[phpstudy8.1集成工具（离线版，有需要点击下载）](https://gitee.com/dengzhenhua/phpstudy)，phpMyAdmin 4.8.5，Apache2.4.39（或Nginx1.15.11），PHP8.2-8.5，MySQL5.7.26。
 
 事实上，您不需要使用跟以上完全一致的环境也可以正常运行本系统，理论上只要PHP>=8.2即可。如有不兼容，建议模拟本环境测试，并欢迎您提建议和反馈BUG。
 
@@ -154,6 +154,12 @@ GitHub Wiki：[https://github.com/dengcao/dc-admin/wiki](https://github.com/deng
 5、如果升级后发现登录后台密码错误，可以修改数据表dc_administrators里的字段admin_password的值为：3d53d5757ce611e57abf98d9bfe57098  对应密码就是：123456
 
 ### 更新说明
+
+**版本2.0.1，主要更新：**
+
+1、将 topthink/* 及所有插件更新到最新版。
+
+2、修复若干BUG，如修复评论系统显示不正常的问题。
 
 **版本2.0，主要更新：**
 

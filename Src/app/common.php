@@ -94,7 +94,7 @@ function comment_face(){
 //应用的名称及版本
 $GLOBALS["dengcao_common_config"] = [
     "name" => "dc-admin",
-    "version" => "2.0",
+    "version" => "2.0.1",
     "gitee" => "dengzhenhua/dc-admin",
     "github" => "dengcao/dc-admin",
 ];
@@ -102,7 +102,7 @@ $GLOBALS["dengcao_common_config"] = [
 //dc-admin 程序名称及版本，用于标识和升级，勿删改
 $GLOBALS["dengcao_admin_sys"] = array(
     "name" => "dc-admin",
-    "version" => "2.0",
+    "version" => "2.0.1",
     "url" => "https://gitee.com/dengzhenhua/dc-admin",
 );
 
