@@ -62,10 +62,10 @@ class ZipStreamTest extends TestCase
 
         $name = 'árvíztűrő tükörfúrógép.txt';
         $content = 'Sample String Data';
-        $comment
-            = 'Filename has every special characters '
-            . 'from Hungarian language in lowercase. '
-            . 'In uppercase: ÁÍŰŐÜÖÚÓÉ';
+        $comment =
+            'Filename has every special characters ' .
+            'from Hungarian language in lowercase. ' .
+            'In uppercase: ÁÍŰŐÜÖÚÓÉ';
 
         $zip->addFile(fileName: $name, data: $content, comment: $comment);
         $zip->finish();
@@ -327,14 +327,11 @@ class ZipStreamTest extends TestCase
             defaultEnableZeroHeader: false,
         );
 
-        foreach (['cat', 'more'] as $cmd) {
-            $streamUnseekable = @popen($cmd, 'w');
-            if ($streamUnseekable !== false) {
-                break;
-            }
-        }
-
-        if ($streamUnseekable === false) {
+        if (file_exists('/dev/null')) {
+            $streamUnseekable = fopen('/dev/null', 'w+');
+        } elseif (file_exists('NUL')) {
+            $streamUnseekable = fopen('NUL', 'w+');
+        } else {
             $this->markTestSkipped('Needs file /dev/null');
         }
 
@@ -549,24 +546,12 @@ class ZipStreamTest extends TestCase
             );
         }
 
-        $zip->addDirectory('mydir/');
-
         $zip->finish();
 
         $tmpDir = $this->validateAndExtractZip($this->tempfile);
 
         $files = $this->getRecursiveFileList($tmpDir);
         $this->assertSame(['sample0', 'sample1', 'sample2', 'sample3'], $files);
-
-        $this->assertFileDoesNotContain(
-            $this->tempfile,
-            PackField::pack(
-                new PackField(format: 'V', value: 0x00000000), // CRC-32 = 0 (directory)
-                new PackField(format: 'V', value: 0xFFFFFFFF), // compressedSize — bug sentinel
-                new PackField(format: 'V', value: 0xFFFFFFFF), // uncompressedSize — bug sentinel
-                new PackField(format: 'v', value: 6),          // filename length = strlen('mydir/')
-            )
-        );
     }
 
     #[Group('slow')]
