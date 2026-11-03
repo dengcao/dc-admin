@@ -1,4 +1,4 @@
-# caozha-admin 后台管理框架 1.9.2
+# caozha-admin 后台管理框架 1.9.5
 
 caozha-admin是一个通用的PHP网站后台管理框架，基于开源的ThinkPHP开发，特点：易上手，零门槛，界面清爽极简，极便于二次开发。
 
@@ -39,7 +39,7 @@ caozha-admin是一个通用的PHP网站后台管理框架，基于开源的Think
 
 **快速安装**
 
-1、PHP版本：必须PHP8.0以上，经测试支持：PHP 8.0/8.1/8.2/8.3。
+1、PHP版本：必须PHP8.0以上，经测试支持：PHP 8.0/8.1/8.2/8.3/8.4。
 
 2、上传目录/Src/内所有源码到服务器，并设置网站的根目录指向运行目录/public/。（此为ThinkPHP6.0的要求）
 
@@ -158,6 +158,18 @@ ALTER TABLE `cz_member` CHANGE `lasttime` `lasttime` DATETIME NULL DEFAULT NULL 
 
 
 ### 更新说明
+**版本1.9.5，主要更新：**
+
+1、更新topthink/framework (v6.0.16 => v6.1.5)。
+
+2、更新部分依赖组件。
+
+
+**版本1.9.3，主要更新：**
+
+1、更新topthink/think-helper (v3.1.11 => v3.1.12)。
+
+2、修复后台提示页CSS失效的问题。
 
 
 **版本1.9.2，主要更新：**
