@@ -1,4 +1,4 @@
-# dc-admin 后台管理框架 
+# dc-admin 后台管理框架 2.0.2
 
 dc-admin（原caozha-admin）是一个通用的PHP网站后台管理框架，基于开源的ThinkPHP8.1开发，特点：易上手，零门槛，界面清爽极简，极便于二次开发。
 

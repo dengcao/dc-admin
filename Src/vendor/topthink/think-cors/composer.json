@@ -1,0 +1,29 @@
+{
+    "name": "topthink/think-cors",
+    "description": "The Cors Library For ThinkPHP",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "yunwuxin",
+            "email": "448901948@qq.com"
+        }
+    ],
+    "require": {
+        "topthink/framework": "^6.0|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "think\\cors\\": "src"
+        }
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "think\\cors\\Service"
+            ],
+            "config": {
+                "cors": "src/config.php"
+            }
+        }
+    }
+}
