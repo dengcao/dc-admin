@@ -208,6 +208,7 @@ class Index
         }
         write_syslog(array("log_content"=>"退出登陆"));//记录系统日志
         Session::clear();//清空
+        Cache::clear();//清空缓存
 
         //清空 （原session赋值给外部程序调用）
         session_start();
